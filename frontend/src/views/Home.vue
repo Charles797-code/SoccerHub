@@ -57,14 +57,20 @@
           <div class="match-league">{{ getLeagueNameCN(match.league) }}</div>
           <div class="match-teams">
             <div class="team">
-              <div class="team-logo">{{ getClubName(match.homeClubId)?.charAt(0) }}</div>
+              <div class="team-logo">
+                <img v-if="getClubLogo(match.homeClubId)" :src="getImageUrl(getClubLogo(match.homeClubId))" alt="logo" />
+                <span v-else>{{ getClubName(match.homeClubId)?.charAt(0) }}</span>
+              </div>
               <div class="team-name">{{ getClubName(match.homeClubId) }}</div>
             </div>
             <div class="match-score">
               {{ match.homeScore ?? 0 }} - {{ match.awayScore ?? 0 }}
             </div>
             <div class="team">
-              <div class="team-logo">{{ getClubName(match.awayClubId)?.charAt(0) }}</div>
+              <div class="team-logo">
+                <img v-if="getClubLogo(match.awayClubId)" :src="getImageUrl(getClubLogo(match.awayClubId))" alt="logo" />
+                <span v-else>{{ getClubName(match.awayClubId)?.charAt(0) }}</span>
+              </div>
               <div class="team-name">{{ getClubName(match.awayClubId) }}</div>
             </div>
           </div>
@@ -89,7 +95,10 @@
           <div class="match-league">{{ getLeagueNameCN(match.league) }}</div>
           <div class="match-teams">
             <div class="team">
-              <div class="team-logo">{{ getClubName(match.homeClubId)?.charAt(0) }}</div>
+              <div class="team-logo">
+                <img v-if="getClubLogo(match.homeClubId)" :src="getImageUrl(getClubLogo(match.homeClubId))" alt="logo" />
+                <span v-else>{{ getClubName(match.homeClubId)?.charAt(0) }}</span>
+              </div>
               <div class="team-name">{{ getClubName(match.homeClubId) }}</div>
             </div>
             <div class="match-score">
@@ -97,7 +106,10 @@
               <span v-else class="vs-text">VS</span>
             </div>
             <div class="team">
-              <div class="team-logo">{{ getClubName(match.awayClubId)?.charAt(0) }}</div>
+              <div class="team-logo">
+                <img v-if="getClubLogo(match.awayClubId)" :src="getImageUrl(getClubLogo(match.awayClubId))" alt="logo" />
+                <span v-else>{{ getClubName(match.awayClubId)?.charAt(0) }}</span>
+              </div>
               <div class="team-name">{{ getClubName(match.awayClubId) }}</div>
             </div>
           </div>
@@ -121,7 +133,10 @@
       <div class="player-list">
         <div v-for="(player, index) in topPlayers" :key="player.playerId" class="player-card" @click="goToPlayer(player.playerId)">
           <div class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</div>
-          <div class="player-avatar">{{ (player.nameCn || player.name)?.charAt(0) }}</div>
+          <div class="player-avatar">
+            <img v-if="player.avatarUrl" :src="getImageUrl(player.avatarUrl)" alt="头像" />
+            <span v-else>{{ (player.nameCn || player.name)?.charAt(0) }}</span>
+          </div>
           <div class="player-info">
             <h4>{{ player.nameCn || player.name }}</h4>
             <div class="position">{{ player.clubName || '未知俱乐部' }} · {{ positionMap[player.position] || player.position }}<span v-if="player.birthDate" class="player-age">{{ calcAge(player.birthDate) }}岁</span></div>
@@ -130,6 +145,36 @@
             <div class="score-value">{{ Number(player.avgScore).toFixed(2) }}</div>
             <div class="score-label">评分</div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>
+          <el-icon><Document /></el-icon>
+          足球头条
+        </h2>
+        <router-link to="/news" class="view-all">更多新闻</router-link>
+      </div>
+      <div class="news-grid">
+        <div v-for="news in topNews" :key="news.articleId" class="news-card" @click="router.push(`/news/${news.articleId}`)">
+          <div class="news-cover" v-if="news.coverImageUrl">
+            <img :src="getImageUrl(news.coverImageUrl)" :alt="news.title" />
+          </div>
+          <div class="news-cover news-cover-placeholder" v-else>
+            <el-icon :size="24"><Document /></el-icon>
+          </div>
+          <div class="news-info">
+            <h4>{{ news.title }}</h4>
+            <div class="news-meta">
+              <span v-if="news.sourceName" class="news-source">{{ news.sourceName }}</span>
+              <span>{{ news.viewCount || 0 }} 阅读</span>
+            </div>
+          </div>
+        </div>
+        <div v-if="topNews.length === 0" class="empty-state">
+          暂无新闻
         </div>
       </div>
     </section>
@@ -155,17 +200,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { matchApi, playerApi, clubApi } from '@/api'
+import { matchApi, playerApi, clubApi, newsApi } from '@/api'
 
 const router = useRouter()
 const stats = ref({ totalClubs: 0, totalPlayers: 0, todayMatches: 0, liveMatches: 0 })
 const liveMatches = ref<any[]>([])
 const todayMatches = ref<any[]>([])
 const topPlayers = ref<any[]>([])
+const topNews = ref<any[]>([])
 const clubs = ref<any[]>([])
 const leagues = ref<string[]>([])
 
 const clubNameMap = ref<Record<number, string>>({})
+const clubLogoMap = ref<Record<number, string>>({})
 
 const positionMap: Record<string, string> = {
   GK: '守门员',
@@ -212,10 +259,18 @@ onMounted(async () => {
     clubs.value = allClubsRes.data.data?.records || []
     clubs.value.forEach((c: any) => {
       clubNameMap.value[c.clubId] = c.shortName || c.name
+      clubLogoMap.value[c.clubId] = c.logoUrl || c.logo || ''
     })
 
     const leagueSet = new Set(clubs.value.map((c: any) => c.league))
     leagues.value = Array.from(leagueSet)
+
+    try {
+      const newsRes = await newsApi.list({ page: 1, pageSize: 4 })
+      topNews.value = newsRes.data.data?.records || []
+    } catch {
+      topNews.value = []
+    }
   } catch (e) {
     console.error('加载数据失败', e)
   }
@@ -224,6 +279,16 @@ onMounted(async () => {
 function getClubName(clubId: number) {
   const name = clubNameMap.value[clubId] || ''
   return name
+}
+
+function getClubLogo(clubId: number) {
+  return clubLogoMap.value[clubId] || ''
+}
+
+function getImageUrl(url: string) {
+  if (!url) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return '/api' + url
 }
 
 function calcAge(birthDate: string) {
@@ -569,6 +634,8 @@ function goToLeague(league: string) {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 50%;
+      display: block;
     }
   }
 
@@ -610,6 +677,81 @@ function goToLeague(league: string) {
     .score-label {
       font-size: 10px;
       color: #a3a3a3;
+    }
+  }
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.news-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: #ffffff;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  &:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .news-cover {
+    width: 100px;
+    height: 70px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &.news-cover-placeholder {
+      background: #f0f4ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #b3c6ff;
+    }
+  }
+
+  .news-info {
+    flex: 1;
+    min-width: 0;
+
+    h4 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #262626;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .news-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #a3a3a3;
+
+      .news-source {
+        background: rgba(26, 86, 219, 0.1);
+        color: #1a56db;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
     }
   }
 }

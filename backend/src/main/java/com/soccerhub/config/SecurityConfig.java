@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/follows/*/followers").permitAll()
                 .requestMatchers(HttpMethod.GET, "/news/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/standings/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/ai/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/club-admin/**").hasAnyRole("CLUB_ADMIN", "SUPER_ADMIN")

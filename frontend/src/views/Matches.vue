@@ -19,7 +19,10 @@
         <div class="match-league">{{ getLeagueNameCN(match.league) }}</div>
         <div class="match-teams">
           <div class="team">
-            <div class="team-logo">{{ getClubName(match.homeClubId)?.charAt(0) }}</div>
+            <div class="team-logo">
+              <img v-if="getClubLogo(match.homeClubId)" :src="getImageUrl(getClubLogo(match.homeClubId))" alt="logo" />
+              <span v-else>{{ getClubName(match.homeClubId)?.charAt(0) }}</span>
+            </div>
             <div class="team-name">{{ getClubName(match.homeClubId) }}</div>
           </div>
           <div class="match-center">
@@ -30,7 +33,10 @@
             <div class="match-time">{{ formatTime(match.matchTime) }}</div>
           </div>
           <div class="team">
-            <div class="team-logo">{{ getClubName(match.awayClubId)?.charAt(0) }}</div>
+            <div class="team-logo">
+              <img v-if="getClubLogo(match.awayClubId)" :src="getImageUrl(getClubLogo(match.awayClubId))" alt="logo" />
+              <span v-else>{{ getClubName(match.awayClubId)?.charAt(0) }}</span>
+            </div>
             <div class="team-name">{{ getClubName(match.awayClubId) }}</div>
           </div>
         </div>
@@ -65,9 +71,20 @@ const pageSize = ref(20)
 const total = ref(0)
 
 const clubNameMap = ref<Record<number, string>>({})
+const clubLogoMap = ref<Record<number, string>>({})
 
 function getClubName(clubId: number) {
   return clubNameMap.value[clubId] || `球队${clubId}`
+}
+
+function getClubLogo(clubId: number) {
+  return clubLogoMap.value[clubId] || ''
+}
+
+function getImageUrl(path: string) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return '/api' + path
 }
 
 const matchStatuses = [
@@ -113,6 +130,7 @@ onMounted(async () => {
     const allClubs = clubsRes.data.data?.records || []
     allClubs.forEach((c: any) => {
       clubNameMap.value[c.clubId] = c.shortName || c.name
+      clubLogoMap.value[c.clubId] = c.logoUrl || ''
     })
   } catch (e) {
     console.error(e)
@@ -193,6 +211,13 @@ function formatTime(time: string) {
         justify-content: center;
         font-size: 18px;
         color: #737373;
+        overflow: hidden;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
       }
 
       .team-name {

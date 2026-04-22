@@ -150,7 +150,7 @@ public class AdminService {
     @Transactional
     public NewsArticle createNews(NewsArticle article) {
         article.setCreatedAt(java.time.LocalDateTime.now());
-        article.setIsPublished(true);
+        article.setIsPublished(1);
         article.setPublishedAt(java.time.LocalDateTime.now());
         newsMapper.insert(article);
         return article;

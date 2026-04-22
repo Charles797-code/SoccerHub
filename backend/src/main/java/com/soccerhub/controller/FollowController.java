@@ -1,7 +1,9 @@
 package com.soccerhub.controller;
 
 import com.soccerhub.dto.ApiResponse;
+import com.soccerhub.entity.SysUser;
 import com.soccerhub.entity.UserClubFollow;
+import com.soccerhub.service.AuthService;
 import com.soccerhub.service.FollowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class FollowController {
 
     private final FollowService followService;
+    private final AuthService authService;
 
     @PostMapping
     @PreAuthorize("hasRole('FAN')")
@@ -31,8 +34,8 @@ public class FollowController {
         try {
             Long clubId = Long.valueOf(request.get("clubId").toString());
             Boolean isPrimary = request.getOrDefault("isPrimary", false).equals(true);
-            followService.followClub(
-                    Long.valueOf(authentication.getName()), clubId, isPrimary);
+            Long userId = authService.getCurrentUser(authentication.getName()).getUserId();
+            followService.followClub(userId, clubId, isPrimary);
             return ResponseEntity.ok(ApiResponse.success("Successfully followed club", null));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));

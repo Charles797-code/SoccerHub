@@ -85,6 +85,7 @@ public class MatchPlayerRatingService {
             vo.setPosition(p.getPosition());
             vo.setJerseyNumber(p.getJerseyNumber());
             vo.setClubId(p.getClubId());
+            vo.setAvatarUrl(p.getAvatarUrl());
 
             List<MatchPlayerRating> pr = ratingsByPlayer.getOrDefault(p.getPlayerId(), Collections.emptyList());
             if (!pr.isEmpty()) {
@@ -145,6 +146,7 @@ public class MatchPlayerRatingService {
         vo.setPosition(player != null ? player.getPosition() : null);
         vo.setJerseyNumber(player != null ? player.getJerseyNumber() : null);
         vo.setClubId(player != null ? player.getClubId() : null);
+        vo.setAvatarUrl(player != null ? player.getAvatarUrl() : null);
         vo.setAvgScore(BigDecimal.valueOf(avg).setScale(1, RoundingMode.HALF_UP));
         vo.setTotalRatings(allRatings.size());
         vo.setMyScore(score);

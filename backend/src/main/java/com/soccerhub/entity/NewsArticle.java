@@ -12,12 +12,14 @@ public class NewsArticle {
     private String title;
     private String summary;
     private String content;
+    private String sourceUrl;
+    private String sourceName;
     private Long authorId;
     private Long clubId;
     private String tags;
     private String coverImageUrl;
     private Integer viewCount;
-    private Boolean isPublished;
+    private Integer isPublished;
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

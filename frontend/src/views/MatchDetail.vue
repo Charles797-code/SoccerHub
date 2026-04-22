@@ -15,7 +15,10 @@
 
       <div class="match-teams-row">
         <div class="team-col" @click="selectTeam(match.homeClubId)" :class="{ active: selectedClubId === match.homeClubId }">
-          <div class="team-logo-big">{{ getClubName(match.homeClubId)?.charAt(0) }}</div>
+          <div class="team-logo-big">
+            <img v-if="getClubLogo(match.homeClubId)" :src="getImageUrl(getClubLogo(match.homeClubId))" alt="logo" />
+            <span v-else>{{ getClubName(match.homeClubId)?.charAt(0) }}</span>
+          </div>
           <div class="team-name-big">{{ getClubName(match.homeClubId) }}</div>
         </div>
         <div class="match-center-col">
@@ -32,7 +35,10 @@
           <div v-if="match.venue" class="match-venue">🏟 {{ match.venue }}</div>
         </div>
         <div class="team-col" @click="selectTeam(match.awayClubId)" :class="{ active: selectedClubId === match.awayClubId }">
-          <div class="team-logo-big">{{ getClubName(match.awayClubId)?.charAt(0) }}</div>
+          <div class="team-logo-big">
+            <img v-if="getClubLogo(match.awayClubId)" :src="getImageUrl(getClubLogo(match.awayClubId))" alt="logo" />
+            <span v-else>{{ getClubName(match.awayClubId)?.charAt(0) }}</span>
+          </div>
           <div class="team-name-big">{{ getClubName(match.awayClubId) }}</div>
         </div>
       </div>
@@ -56,7 +62,10 @@
       <div v-if="playerRatings.length > 0" class="players-grid">
         <div v-for="p in playerRatings" :key="p.playerId" class="player-rating-card">
           <div class="player-info">
-            <div class="player-avatar">{{ (p.playerNameCn || p.playerName)?.charAt(0) }}</div>
+            <div class="player-avatar">
+              <img v-if="p.avatarUrl" :src="getImageUrl(p.avatarUrl)" alt="头像" />
+              <span v-else>{{ (p.playerNameCn || p.playerName)?.charAt(0) }}</span>
+            </div>
             <div class="player-detail">
               <div class="player-name">{{ p.playerNameCn || p.playerName }}</div>
               <div class="player-meta-row">
@@ -166,6 +175,7 @@ const selectedClubId = ref<number>(0)
 const playerRatings = ref<any[]>([])
 
 const clubNameMap = ref<Record<number, string>>({})
+const clubLogoMap = ref<Record<number, string>>({})
 const userNameMap = ref<Record<number, string>>({})
 
 const leagueNameMap: Record<string, string> = {
@@ -191,6 +201,7 @@ const positionMap: Record<string, string> = {
 function getLeagueNameCN(league: string) { return leagueNameMap[league] || league }
 function getStatusLabel(status: string) { return statusLabelMap[status] || status }
 function getClubName(clubId: number) { return clubNameMap.value[clubId] || `球队${clubId}` }
+function getClubLogo(clubId: number) { return clubLogoMap.value[clubId] || '' }
 function getUserName(userId: number) { return userNameMap.value[userId] || `用户${userId}` }
 
 function getScoreClass(score: number) {
@@ -198,6 +209,12 @@ function getScoreClass(score: number) {
   if (score >= 8) return 'score-high'
   if (score >= 6) return 'score-mid'
   return 'score-low'
+}
+
+function getImageUrl(path: string) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return '/api' + path
 }
 
 function formatTime(time: string) {
@@ -225,7 +242,10 @@ onMounted(async () => {
   try {
     const clubsRes = await clubApi.list({ page: 1, pageSize: 100 })
     const allClubs = clubsRes.data.data?.records || []
-    allClubs.forEach((c: any) => { clubNameMap.value[c.clubId] = c.shortName || c.name })
+    allClubs.forEach((c: any) => {
+      clubNameMap.value[c.clubId] = c.shortName || c.name
+      clubLogoMap.value[c.clubId] = c.logoUrl || ''
+    })
   } catch (e) { console.error(e) }
 
   try {
@@ -382,6 +402,13 @@ function loadMore() {
     justify-content: center;
     font-size: 30px;
     color: #1a56db;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   .team-name-big {
@@ -478,6 +505,13 @@ function loadMore() {
     font-size: 16px;
     color: #1a56db;
     flex-shrink: 0;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   .player-detail { min-width: 0; }

@@ -119,7 +119,7 @@ function goToClub(clubId: number) {
 function getClubLogoUrl(url: string) {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return url
+  return '/api' + url
 }
 </script>
 

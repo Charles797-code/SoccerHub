@@ -319,6 +319,9 @@
 
     <el-dialog v-model="clubDialogVisible" :title="clubForm.clubId ? '编辑俱乐部' : '新增俱乐部'" width="550px">
       <el-form :model="clubForm" label-width="90px">
+        <el-form-item label="俱乐部Logo">
+          <ImageUpload v-model="clubForm.logoUrl" placeholder="上传Logo" alt="俱乐部Logo" />
+        </el-form-item>
         <el-form-item label="名称">
           <el-input v-model="clubForm.name" />
         </el-form-item>
@@ -352,6 +355,9 @@
 
     <el-dialog v-model="playerDialogVisible" :title="playerForm.playerId ? '编辑球员' : '新增球员'" width="550px">
       <el-form :model="playerForm" label-width="90px">
+        <el-form-item label="球员头像">
+          <ImageUpload v-model="playerForm.avatarUrl" placeholder="上传头像" alt="球员头像" />
+        </el-form-item>
         <el-form-item label="英文名">
           <el-input v-model="playerForm.name" />
         </el-form-item>
@@ -407,6 +413,7 @@
 import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi, clubApi, playerApi } from '@/api'
+import ImageUpload from '@/components/ImageUpload.vue'
 
 const activeTab = ref('stats')
 const pageSize = ref(20)
@@ -647,7 +654,7 @@ function openClubDialog(row?: any) {
   if (row) {
     clubForm.value = { ...row }
   } else {
-    clubForm.value = { name: '', shortName: '', league: '', city: '', country: '', stadium: '', stadiumCapacity: null, description: '' }
+    clubForm.value = { name: '', shortName: '', league: '', city: '', country: '', stadium: '', stadiumCapacity: null, description: '', logoUrl: '' }
   }
   clubDialogVisible.value = true
 }
@@ -680,7 +687,7 @@ function openPlayerDialog(row?: any) {
   if (row) {
     playerForm.value = { ...row }
   } else {
-    playerForm.value = { name: '', nameCn: '', clubId: null, position: 'MID', jerseyNumber: null, nationality: '', heightCm: null, weightKg: null, status: 'ACTIVE', marketValue: null }
+    playerForm.value = { name: '', nameCn: '', clubId: null, position: 'MID', jerseyNumber: null, nationality: '', heightCm: null, weightKg: null, status: 'ACTIVE', marketValue: null, avatarUrl: '' }
   }
   playerDialogVisible.value = true
 }

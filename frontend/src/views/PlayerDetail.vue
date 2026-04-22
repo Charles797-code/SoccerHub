@@ -4,7 +4,10 @@
       <div class="player-banner">
         <div class="banner-overlay"></div>
         <div class="banner-content">
-          <div class="player-avatar">{{ (player.nameCn || player.name)?.charAt(0) }}</div>
+          <div class="player-avatar">
+            <img v-if="player.avatarUrl" :src="getImageUrl(player.avatarUrl)" alt="头像" />
+            <span v-else>{{ (player.nameCn || player.name)?.charAt(0) }}</span>
+          </div>
           <div class="player-meta">
             <h1>{{ player.nameCn || player.name }}</h1>
             <div class="meta-row">
@@ -136,6 +139,12 @@ async function submitRating() {
     ratingLoading.value = false
   }
 }
+
+function getImageUrl(path: string) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return '/api' + path
+}
 </script>
 
 <style scoped lang="scss">
@@ -174,6 +183,13 @@ async function submitRating() {
       font-size: 32px;
       font-weight: 700;
       flex-shrink: 0;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
 
     .player-meta {

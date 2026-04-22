@@ -270,6 +270,14 @@ export const newsApi = {
     api.get('/news', { params }),
   getById: (id: number) =>
     api.get(`/news/${id}`),
+  scrape: () =>
+    api.post('/news/scrape'),
+  getComments: (articleId: number, params: any) =>
+    api.get(`/news/${articleId}/comments`, { params }),
+  addComment: (articleId: number, data: any) =>
+    api.post(`/news/${articleId}/comments`, data),
+  deleteComment: (commentId: number) =>
+    api.delete(`/news/comments/${commentId}`),
   create: (data: any) =>
     api.post('/news', data),
   update: (id: number, data: any) =>

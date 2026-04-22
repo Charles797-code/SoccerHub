@@ -11,6 +11,7 @@ public class MatchPlayerRatingVO {
     private String position;
     private Integer jerseyNumber;
     private Long clubId;
+    private String avatarUrl;
     private BigDecimal avgScore;
     private Integer totalRatings;
     private Integer myScore;

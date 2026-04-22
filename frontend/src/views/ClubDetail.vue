@@ -4,7 +4,10 @@
       <div class="club-banner">
         <div class="banner-overlay"></div>
         <div class="banner-content">
-          <div class="club-logo">{{ club.shortName?.charAt(0) || club.name?.charAt(0) }}</div>
+          <div class="club-logo">
+            <img v-if="club.logoUrl" :src="getImageUrl(club.logoUrl)" alt="Logo" />
+            <span v-else>{{ club.shortName?.charAt(0) || club.name?.charAt(0) }}</span>
+          </div>
           <div class="club-meta">
             <h1>{{ club.shortName || club.name }}</h1>
             <div class="meta-row">
@@ -190,6 +193,12 @@ onMounted(async () => {
 function goToPlayer(playerId: number) {
   router.push(`/players/${playerId}`)
 }
+
+function getImageUrl(path: string) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return '/api' + path
+}
 </script>
 
 <style scoped lang="scss">
@@ -228,6 +237,13 @@ function goToPlayer(playerId: number) {
       font-size: 32px;
       font-weight: 700;
       flex-shrink: 0;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
 
     .club-meta {

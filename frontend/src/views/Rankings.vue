@@ -7,7 +7,10 @@
     <div class="rankings-list">
       <div v-for="(player, index) in players" :key="player.playerId" class="rank-row" @click="goToPlayer(player.playerId)">
         <div class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</div>
-        <div class="player-avatar">{{ (player.nameCn || player.name)?.charAt(0) }}</div>
+        <div class="player-avatar">
+          <img v-if="player.avatarUrl" :src="getImageUrl(player.avatarUrl)" alt="头像" />
+          <span v-else>{{ (player.nameCn || player.name)?.charAt(0) }}</span>
+        </div>
         <div class="player-info">
           <h4>{{ player.nameCn || player.name }}</h4>
           <div class="player-meta">
@@ -80,6 +83,12 @@ function calcAge(birthDate: string) {
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
   return age
 }
+
+function getImageUrl(path: string) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return '/api' + path
+}
 </script>
 
 <style scoped lang="scss">
@@ -133,6 +142,13 @@ function calcAge(birthDate: string) {
     font-size: 18px;
     color: #1a56db;
     flex-shrink: 0;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   .player-info {
