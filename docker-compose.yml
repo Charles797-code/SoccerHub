@@ -1,0 +1,14 @@
+services:
+  oracle21:
+    image: container-registry.oracle.com/database/express:21.3.0-xe
+    container_name: soccer_oracle21
+    environment:
+      ORACLE_PWD: SoccerHub2026!
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle21_data:/opt/oracle/oradata
+    restart: unless-stopped
+
+volumes:
+  oracle21_data:

@@ -1,0 +1,51 @@
+# ========================
+# Backend (Java / Maven)
+# ========================
+backend/target/
+backend/*.jar
+backend/*.war
+backend/*.class
+backend/settings.xml
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# ========================
+# Frontend (Node / Vue)
+# ========================
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# ========================
+# IDE
+# ========================
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
+
+# ========================
+# Uploads
+# ========================
+uploads/
+
+# ========================
+# Env / Secrets
+# ========================
+.env

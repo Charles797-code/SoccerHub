@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soccerhub.mapper.PlayerMapper">
+    <resultMap id="PlayerRankingMap" type="com.soccerhub.dto.PlayerRanking">
+        <id column="PLAYER_ID" property="playerId" />
+        <result column="NAME" property="name" />
+        <result column="NAME_CN" property="nameCn" />
+        <result column="POSITION" property="position" />
+        <result column="CLUB_ID" property="clubId" />
+        <result column="CLUB_NAME" property="clubName" />
+        <result column="JERSEY_NUMBER" property="jerseyNumber" />
+        <result column="NATIONALITY" property="nationality" />
+        <result column="BIRTH_DATE" property="birthDate" />
+        <result column="HEIGHT_CM" property="heightCm" />
+        <result column="WEIGHT_KG" property="weightKg" />
+        <result column="STATUS" property="status" />
+        <result column="MARKET_VALUE" property="marketValue" />
+        <result column="AVATAR_URL" property="avatarUrl" />
+        <result column="AVG_SCORE" property="avgScore" />
+        <result column="TOTAL_RATINGS" property="totalRatings" />
+        <result column="LEAGUE" property="league" />
+    </resultMap>
+
+    <select id="selectRankingsWithLeague" resultMap="PlayerRankingMap">
+        SELECT
+            p.PLAYER_ID,
+            p.NAME,
+            p.NAME_CN,
+            p.POSITION,
+            p.CLUB_ID,
+            c.SHORT_NAME AS CLUB_NAME,
+            p.JERSEY_NUMBER,
+            p.NATIONALITY,
+            p.BIRTH_DATE,
+            p.HEIGHT_CM,
+            p.WEIGHT_KG,
+            p.STATUS,
+            p.MARKET_VALUE,
+            p.AVATAR_URL,
+            p.AVG_SCORE,
+            p.TOTAL_RATINGS,
+            c.LEAGUE
+        FROM PLAYER p
+        LEFT JOIN CLUB c ON p.CLUB_ID = c.CLUB_ID
+        WHERE p.STATUS = 'ACTIVE' AND p.AVG_SCORE > 0
+        <if test="league != null and league != ''">
+            AND c.LEAGUE = #{league}
+        </if>
+        <if test="position != null and position != ''">
+            AND p.POSITION = #{position}
+        </if>
+        ORDER BY p.AVG_SCORE DESC
+    </select>
+</mapper>

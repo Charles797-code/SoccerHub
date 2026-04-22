@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soccerhub.mapper.SysUserMapper">
+    <select id="selectByUsername" resultType="com.soccerhub.entity.SysUser">
+        SELECT * FROM SYS_USER WHERE USERNAME = #{username}
+    </select>
+    <select id="selectByEmail" resultType="com.soccerhub.entity.SysUser">
+        SELECT * FROM SYS_USER WHERE EMAIL = #{email}
+    </select>
+</mapper>
