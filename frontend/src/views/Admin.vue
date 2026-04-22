@@ -6,25 +6,107 @@
 
     <div class="admin-tabs">
       <el-tabs v-model="activeTab" type="border-card">
-        <el-tab-pane label="系统统计" name="stats">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="stat-value">{{ stats.totalUsers ?? 0 }}</span>
-              <span class="stat-label">总用户数</span>
+        <el-tab-pane label="分析统计" name="stats">
+          <div v-if="analytics" class="analytics-section">
+            <h3 style="margin:0 0 14px;font-size:16px;color:#333">总览</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalUsers ?? 0 }}</span>
+                <span class="stat-label">总用户数</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalClubs ?? 0 }}</span>
+                <span class="stat-label">总俱乐部数</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalPlayers ?? 0 }}</span>
+                <span class="stat-label">总球员数</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalMatches ?? 0 }}</span>
+                <span class="stat-label">总比赛数</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalRatings ?? 0 }}</span>
+                <span class="stat-label">总评分数</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalNews ?? 0 }}</span>
+                <span class="stat-label">总新闻数</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalGoals ?? 0 }}</span>
+                <span class="stat-label">总进球数</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">{{ analytics.overview?.totalAssists ?? 0 }}</span>
+                <span class="stat-label">总助攻数</span>
+              </div>
             </div>
-            <div class="stat-card">
-              <span class="stat-value">{{ stats.totalClubs ?? 0 }}</span>
-              <span class="stat-label">总俱乐部数</span>
+
+            <div class="stats-row-3">
+              <div class="stat-card-sm">
+                <span class="stat-value-sm">{{ analytics.overview?.finishedMatches ?? 0 }}</span>
+                <span class="stat-label">已结束</span>
+              </div>
+              <div class="stat-card-sm">
+                <span class="stat-value-sm">{{ analytics.overview?.inProgressMatches ?? 0 }}</span>
+                <span class="stat-label">进行中</span>
+              </div>
+              <div class="stat-card-sm">
+                <span class="stat-value-sm">{{ analytics.overview?.pendingMatches ?? 0 }}</span>
+                <span class="stat-label">未开始</span>
+              </div>
+              <div class="stat-card-sm">
+                <span class="stat-value-sm">{{ analytics.overview?.totalYellowCards ?? 0 }}</span>
+                <span class="stat-label">黄牌</span>
+              </div>
+              <div class="stat-card-sm">
+                <span class="stat-value-sm">{{ analytics.overview?.totalRedCards ?? 0 }}</span>
+                <span class="stat-label">红牌</span>
+              </div>
+              <div class="stat-card-sm">
+                <span class="stat-value-sm">{{ analytics.overview?.activePlayers ?? 0 }}</span>
+                <span class="stat-label">活跃球员</span>
+              </div>
+              <div class="stat-card-sm">
+                <span class="stat-value-sm">{{ analytics.overview?.injuredPlayers ?? 0 }}</span>
+                <span class="stat-label">受伤球员</span>
+              </div>
             </div>
-            <div class="stat-card">
-              <span class="stat-value">{{ stats.totalPlayers ?? 0 }}</span>
-              <span class="stat-label">总球员数</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-value">{{ stats.totalMatches ?? 0 }}</span>
-              <span class="stat-label">总比赛数</span>
+
+            <div class="analytics-charts-row">
+              <div class="analytics-chart-card">
+                <h4>联赛数据对比</h4>
+                <el-table :data="analytics.leagueStats" stripe size="small" style="margin-top:8px">
+                  <el-table-column prop="league" label="联赛" />
+                  <el-table-column prop="clubCount" label="俱乐部" width="80" />
+                  <el-table-column prop="playerCount" label="球员" width="80" />
+                  <el-table-column prop="matchCount" label="比赛" width="80" />
+                  <el-table-column prop="totalGoals" label="进球" width="80" />
+                </el-table>
+              </div>
+              <div class="analytics-chart-card">
+                <h4>球员位置分布</h4>
+                <div v-for="pos in analytics.positionDist" :key="pos.position" class="bar-row">
+                  <span class="bar-label">{{ pos.position }}</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" :style="{ width: posBarWidth(pos.count) }"></div>
+                  </div>
+                  <span class="bar-count">{{ pos.count }}</span>
+                </div>
+              </div>
+              <div class="analytics-chart-card">
+                <h4>月度比赛趋势</h4>
+                <el-table :data="analytics.monthlyMatches" stripe size="small" style="margin-top:8px">
+                  <el-table-column prop="month" label="月份" width="90" />
+                  <el-table-column prop="matchCount" label="比赛数" width="80" />
+                  <el-table-column prop="goalCount" label="进球数" width="80" />
+                </el-table>
+              </div>
             </div>
           </div>
+          <div v-else style="text-align:center;padding:40px;color:#999">加载中...</div>
         </el-tab-pane>
 
         <el-tab-pane label="用户管理" name="users">
@@ -113,8 +195,9 @@
             <el-table-column label="比赛时间" width="160">
               <template #default="{ row }">{{ formatTime(row.matchTime) }}</template>
             </el-table-column>
-            <el-table-column label="操作" width="150">
+            <el-table-column label="操作" width="200">
               <template #default="{ row }">
+                <el-button v-if="row.status !== 'FINISHED'" type="warning" size="small" @click="openFinishDialog(row)">结束比赛</el-button>
                 <el-button size="small" @click="openMatchDialog(row)">编辑</el-button>
                 <el-button type="danger" size="small" @click="handleDeleteMatch(row.matchId)">删除</el-button>
               </template>
@@ -190,6 +273,126 @@
           </div>
         </el-tab-pane>
 
+        <el-tab-pane label="数据导入导出" name="io">
+          <div class="io-section">
+            <h3 style="margin:0 0 16px;font-size:16px;color:#333">数据导出</h3>
+            <div class="io-grid">
+              <div class="io-card">
+                <h4>俱乐部数据</h4>
+                <p>导出所有俱乐部信息</p>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <el-button type="primary" size="small" @click="handleExport('clubs', 'xlsx')">导出 Excel</el-button>
+                  <el-button size="small" @click="handleExport('clubs', 'csv')">导出 CSV</el-button>
+                </div>
+              </div>
+              <div class="io-card">
+                <h4>球员数据</h4>
+                <p>导出所有球员信息</p>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <el-button type="primary" size="small" @click="handleExport('players', 'xlsx')">导出 Excel</el-button>
+                  <el-button size="small" @click="handleExport('players', 'csv')">导出 CSV</el-button>
+                </div>
+              </div>
+              <div class="io-card">
+                <h4>比赛数据</h4>
+                <p>导出所有比赛信息</p>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <el-button type="primary" size="small" @click="handleExport('matches', 'xlsx')">导出 Excel</el-button>
+                  <el-button size="small" @click="handleExport('matches', 'csv')">导出 CSV</el-button>
+                </div>
+              </div>
+              <div class="io-card">
+                <h4>积分榜数据</h4>
+                <p>导出联赛积分榜</p>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <el-button type="primary" size="small" @click="handleExport('standings', 'xlsx')">导出 Excel</el-button>
+                  <el-button size="small" @click="handleExport('standings', 'csv')">导出 CSV</el-button>
+                </div>
+              </div>
+              <div class="io-card">
+                <h4>球员赛季统计</h4>
+                <p>导出射手榜/助攻榜等</p>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <el-button type="primary" size="small" @click="handleExport('playerStats', 'xlsx')">导出 Excel</el-button>
+                  <el-button size="small" @click="handleExport('playerStats', 'csv')">导出 CSV</el-button>
+                </div>
+              </div>
+            </div>
+
+            <h3 style="margin:28px 0 16px;font-size:16px;color:#333">数据导入</h3>
+            <div class="io-grid">
+              <div class="io-card">
+                <h4>导入球员</h4>
+                <p>Excel格式：英文名、中文名、位置、俱乐部ID、号码、国籍、身高cm、体重kg、状态</p>
+                <el-upload
+                  :auto-upload="false"
+                  :show-file-list="false"
+                  accept=".xlsx,.xls"
+                  :on-change="(f: any) => handleImport('players', f)"
+                  style="margin-top:12px"
+                >
+                  <el-button type="success" size="small">选择文件并导入</el-button>
+                </el-upload>
+              </div>
+              <div class="io-card">
+                <h4>导入比赛</h4>
+                <p>Excel格式：联赛、赛季、主队ID、客队ID、状态</p>
+                <el-upload
+                  :auto-upload="false"
+                  :show-file-list="false"
+                  accept=".xlsx,.xls"
+                  :on-change="(f: any) => handleImport('matches', f)"
+                  style="margin-top:12px"
+                >
+                  <el-button type="success" size="small">选择文件并导入</el-button>
+                </el-upload>
+              </div>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="新闻管理" name="news">
+          <div class="toolbar">
+            <el-input v-model="newsKeyword" placeholder="搜索新闻标题" clearable style="width:200px" @keyup.enter="fetchNews" />
+            <el-select v-model="newsFilterClub" placeholder="俱乐部筛选" clearable style="width:160px" @change="fetchNews">
+              <el-option v-for="c in allClubs" :key="c.clubId" :label="c.shortName || c.name" :value="c.clubId" />
+            </el-select>
+            <el-button type="primary" @click="fetchNews">搜索</el-button>
+            <el-button type="success" @click="openNewsDialog()">新增新闻</el-button>
+            <el-button :loading="scraping" @click="handleScrapeNews">
+              <el-icon><Refresh /></el-icon>
+              抓取新闻
+            </el-button>
+          </div>
+          <el-table :data="newsList" stripe>
+            <el-table-column prop="articleId" label="ID" width="70" />
+            <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="sourceName" label="来源" width="100" />
+            <el-table-column label="俱乐部" width="120">
+              <template #default="{ row }">{{ row.clubId ? getClubName(row.clubId) : '-' }}</template>
+            </el-table-column>
+            <el-table-column prop="viewCount" label="阅读" width="70" />
+            <el-table-column prop="isPublished" label="状态" width="80">
+              <template #default="{ row }">
+                <el-tag :type="row.isPublished === 1 ? 'success' : 'info'" size="small">
+                  {{ row.isPublished === 1 ? '已发布' : '草稿' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="发布时间" width="160">
+              <template #default="{ row }">{{ formatTime(row.publishedAt) }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="150">
+              <template #default="{ row }">
+                <el-button size="small" @click="openNewsDialog(row)">编辑</el-button>
+                <el-button type="danger" size="small" @click="handleDeleteNews(row.articleId)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div class="pagination-wrapper">
+            <el-pagination v-model:current-page="newsPage" :page-size="pageSize" :total="newsTotal" layout="prev, pager, next" @current-change="fetchNews" />
+          </div>
+        </el-tab-pane>
         <el-tab-pane label="球员管理" name="players">
           <div class="toolbar">
             <el-select v-model="playerFilterClub" placeholder="俱乐部筛选" clearable style="width:160px" @change="fetchPlayers">
@@ -281,6 +484,53 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="finishDialogVisible" title="结束比赛" width="750px" :close-on-click-modal="false">
+      <div v-if="finishMatch" style="margin-bottom:16px">
+        <el-descriptions :column="2" border size="small">
+          <el-descriptions-item label="主队">{{ getClubName(finishMatch.homeClubId) }}</el-descriptions-item>
+          <el-descriptions-item label="客队">{{ getClubName(finishMatch.awayClubId) }}</el-descriptions-item>
+          <el-descriptions-item label="联赛">{{ finishMatch.league }}</el-descriptions-item>
+          <el-descriptions-item label="赛季">{{ finishMatch.season }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <el-form label-width="90px">
+        <el-form-item label="比分">
+          <div style="display:flex;align-items:center;gap:12px">
+            <el-input-number v-model="finishForm.homeScore" :min="0" placeholder="主队" />
+            <span>:</span>
+            <el-input-number v-model="finishForm.awayScore" :min="0" placeholder="客队" />
+          </div>
+        </el-form-item>
+        <el-divider content-position="left">比赛事件</el-divider>
+        <div v-for="(evt, idx) in finishForm.events" :key="idx" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
+          <el-select v-model="evt.eventType" placeholder="类型" style="width:120px">
+            <el-option label="进球" value="GOAL" />
+            <el-option label="点球" value="PENALTY" />
+            <el-option label="乌龙球" value="OWN_GOAL" />
+            <el-option label="黄牌" value="YELLOW_CARD" />
+            <el-option label="红牌" value="RED_CARD" />
+          </el-select>
+          <el-select v-model="evt.clubId" placeholder="所属球队" style="width:140px" v-if="finishMatch">
+            <el-option :label="getClubName(finishMatch.homeClubId)" :value="finishMatch.homeClubId" />
+            <el-option :label="getClubName(finishMatch.awayClubId)" :value="finishMatch.awayClubId" />
+          </el-select>
+          <el-select v-model="evt.playerId" placeholder="球员" filterable style="width:140px">
+            <el-option v-for="p in getPlayersByClub(evt.clubId)" :key="p.playerId" :label="p.nameCn || p.name" :value="p.playerId" />
+          </el-select>
+          <el-input-number v-model="evt.matchMinute" :min="1" :max="120" placeholder="分钟" style="width:100px" />
+          <el-select v-if="evt.eventType === 'GOAL' || evt.eventType === 'PENALTY'" v-model="evt.assistPlayerId" placeholder="助攻球员" filterable clearable style="width:140px">
+            <el-option v-for="p in getPlayersByClub(evt.clubId)" :key="p.playerId" :label="p.nameCn || p.name" :value="p.playerId" />
+          </el-select>
+          <el-button type="danger" size="small" @click="finishForm.events.splice(idx, 1)" circle>×</el-button>
+        </div>
+        <el-button type="primary" size="small" @click="addFinishEvent">+ 添加事件</el-button>
+      </el-form>
+      <template #footer>
+        <el-button @click="finishDialogVisible = false">取消</el-button>
+        <el-button type="danger" @click="handleFinishMatch">确认结束比赛</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="transferDialogVisible" title="新增转会" width="500px">
       <el-form :model="transferForm" label-width="90px">
         <el-form-item label="球员">
@@ -353,6 +603,47 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="newsDialogVisible" :title="newsForm.articleId ? '编辑新闻' : '新增新闻'" width="650px">
+      <el-form :model="newsForm" label-width="90px">
+        <el-form-item label="标题">
+          <el-input v-model="newsForm.title" />
+        </el-form-item>
+        <el-form-item label="摘要">
+          <el-input v-model="newsForm.summary" type="textarea" :rows="2" />
+        </el-form-item>
+        <el-form-item label="内容">
+          <el-input v-model="newsForm.content" type="textarea" :rows="5" />
+        </el-form-item>
+        <el-form-item label="来源名称">
+          <el-input v-model="newsForm.sourceName" placeholder="如：懂球帝、新浪体育" />
+        </el-form-item>
+        <el-form-item label="来源链接">
+          <el-input v-model="newsForm.sourceUrl" placeholder="https://..." />
+        </el-form-item>
+        <el-form-item label="关联俱乐部">
+          <el-select v-model="newsForm.clubId" placeholder="选择俱乐部" clearable style="width:100%">
+            <el-option v-for="c in allClubs" :key="c.clubId" :label="c.shortName || c.name" :value="c.clubId" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标签">
+          <el-input v-model="newsForm.tags" placeholder="多个标签用逗号分隔" />
+        </el-form-item>
+        <el-form-item label="封面图">
+          <el-input v-model="newsForm.coverImageUrl" placeholder="图片URL" />
+        </el-form-item>
+        <el-form-item label="发布状态">
+          <el-select v-model="newsForm.isPublished" style="width:100%">
+            <el-option label="已发布" :value="1" />
+            <el-option label="草稿" :value="0" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="newsDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveNews">保存</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="playerDialogVisible" :title="playerForm.playerId ? '编辑球员' : '新增球员'" width="550px">
       <el-form :model="playerForm" label-width="90px">
         <el-form-item label="球员头像">
@@ -412,13 +703,14 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminApi, clubApi, playerApi } from '@/api'
+import { adminApi, clubApi, playerApi, newsApi, analyticsApi } from '@/api'
 import ImageUpload from '@/components/ImageUpload.vue'
+import { Refresh } from '@element-plus/icons-vue'
 
 const activeTab = ref('stats')
 const pageSize = ref(20)
 
-const stats = ref<any>({})
+const analytics = ref<any>(null)
 
 const users = ref<any[]>([])
 const userPage = ref(1)
@@ -447,11 +739,24 @@ const playerTotal = ref(0)
 const playerFilterClub = ref<any>('')
 const playerKeyword = ref('')
 
+const newsList = ref<any[]>([])
+const newsPage = ref(1)
+const newsTotal = ref(0)
+const newsKeyword = ref('')
+const newsFilterClub = ref<any>('')
+const newsDialogVisible = ref(false)
+const newsForm = ref<any>({})
+const scraping = ref(false)
+
 const allClubs = ref<any[]>([])
 const allPlayers = ref<any[]>([])
 
 const matchDialogVisible = ref(false)
 const matchForm = ref<any>({})
+
+const finishDialogVisible = ref(false)
+const finishMatch = ref<any>(null)
+const finishForm = ref<any>({ homeScore: 0, awayScore: 0, events: [] })
 
 const transferDialogVisible = ref(false)
 const transferForm = ref<any>({})
@@ -493,6 +798,7 @@ watch(activeTab, (tab) => {
   if (tab === 'matches' && matches.value.length === 0) fetchMatches()
   if (tab === 'transfers' && transfers.value.length === 0) fetchTransfers()
   if (tab === 'clubs' && clubs.value.length === 0) fetchClubs()
+  if (tab === 'news' && newsList.value.length === 0) fetchNews()
   if (tab === 'players' && players.value.length === 0) fetchPlayers()
 })
 
@@ -518,8 +824,8 @@ async function fetchAllPlayers() {
 
 async function fetchStats() {
   try {
-    const res = await adminApi.getStats()
-    stats.value = res.data.data
+    const res = await analyticsApi.getStats()
+    analytics.value = res.data.data
   } catch (e) { console.error(e) }
 }
 
@@ -615,6 +921,58 @@ async function handleDeleteMatch(matchId: string) {
     ElMessage.success('比赛已删除')
     fetchMatches()
   } catch { }
+}
+
+function getPlayersByClub(clubId: number | null) {
+  if (!clubId) return allPlayers.value
+  return allPlayers.value.filter((p: any) => p.clubId === clubId)
+}
+
+function openFinishDialog(row: any) {
+  finishMatch.value = row
+  finishForm.value = {
+    matchId: row.matchId,
+    homeScore: row.homeScore ?? 0,
+    awayScore: row.awayScore ?? 0,
+    events: []
+  }
+  finishDialogVisible.value = true
+}
+
+function addFinishEvent() {
+  finishForm.value.events.push({
+    eventType: 'GOAL',
+    playerId: null,
+    assistPlayerId: null,
+    clubId: finishMatch.value?.homeClubId || null,
+    matchMinute: null
+  })
+}
+
+async function handleFinishMatch() {
+  if (finishForm.value.homeScore == null || finishForm.value.awayScore == null) {
+    ElMessage.warning('请输入比分')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      `确认结束比赛？比分 ${getClubName(finishMatch.value.homeClubId)} ${finishForm.value.homeScore} : ${finishForm.value.awayScore} ${getClubName(finishMatch.value.awayClubId)}，将自动更新积分榜和球员统计。`,
+      '确认结束比赛',
+      { type: 'warning' }
+    )
+    const payload = {
+      matchId: finishForm.value.matchId,
+      homeScore: finishForm.value.homeScore,
+      awayScore: finishForm.value.awayScore,
+      events: finishForm.value.events.filter((e: any) => e.playerId != null)
+    }
+    await adminApi.finishMatch(payload)
+    ElMessage.success('比赛已结束，积分榜和球员统计已自动更新')
+    finishDialogVisible.value = false
+    fetchMatches()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '操作失败')
+  }
 }
 
 function openTransferDialog() {
@@ -715,6 +1073,107 @@ async function handleDeletePlayer(playerId: number) {
     fetchAllPlayers()
   } catch { }
 }
+
+async function fetchNews() {
+  try {
+    const res = await newsApi.list({
+      page: newsPage.value,
+      pageSize: pageSize.value,
+      keyword: newsKeyword.value || undefined,
+      clubId: newsFilterClub.value || undefined
+    })
+    newsList.value = res.data.data?.records || []
+    newsTotal.value = res.data.data?.total || 0
+  } catch (e) { console.error(e) }
+}
+
+function openNewsDialog(row?: any) {
+  if (row) {
+    newsForm.value = { ...row }
+  } else {
+    newsForm.value = { title: '', summary: '', content: '', sourceName: '', sourceUrl: '', clubId: null, tags: '', coverImageUrl: '', isPublished: 1 }
+  }
+  newsDialogVisible.value = true
+}
+
+async function handleSaveNews() {
+  try {
+    if (newsForm.value.articleId) {
+      await newsApi.update(newsForm.value.articleId, newsForm.value)
+    } else {
+      await newsApi.create(newsForm.value)
+    }
+    ElMessage.success('新闻已保存')
+    newsDialogVisible.value = false
+    fetchNews()
+  } catch (e: any) { ElMessage.error(e.response?.data?.message || '保存失败') }
+}
+
+async function handleDeleteNews(articleId: number) {
+  try {
+    await ElMessageBox.confirm('确定删除该新闻？', '确认', { type: 'warning' })
+    await newsApi.delete(articleId)
+    ElMessage.success('新闻已删除')
+    fetchNews()
+  } catch { }
+}
+
+function posBarWidth(count: number) {
+  if (!analytics.value?.positionDist?.length) return '0%'
+  const max = Math.max(...analytics.value.positionDist.map((p: any) => p.count), 1)
+  return Math.round((count / max) * 100) + '%'
+}
+
+async function handleExport(type: string, format: string) {
+  try {
+    const res = await analyticsApi.exportData(type, format)
+    const blob = new Blob([res.data])
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${type}_${Date.now()}.${format}`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.message || '导出失败')
+  }
+}
+
+async function handleImport(type: string, file: any) {
+  if (!file?.raw) return
+  try {
+    await ElMessageBox.confirm(`确认导入${type === 'players' ? '球员' : '比赛'}数据？`, '确认导入', { type: 'warning' })
+    const apiFn = type === 'players' ? analyticsApi.importPlayers : analyticsApi.importMatches
+    const res = await apiFn(file.raw)
+    const count = res.data.data
+    ElMessage.success(`成功导入 ${count} 条数据`)
+    if (type === 'players') {
+      fetchPlayers()
+      fetchAllPlayers()
+    } else {
+      fetchMatches()
+    }
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '导入失败')
+  }
+}
+
+async function handleScrapeNews() {
+  scraping.value = true
+  try {
+    const res = await newsApi.scrape()
+    const count = res.data.data?.length || 0
+    ElMessage.success(`成功抓取 ${count} 条新闻`)
+    fetchNews()
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.message || '抓取失败')
+  } finally {
+    scraping.value = false
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -767,5 +1226,122 @@ async function handleDeletePlayer(playerId: number) {
     color: #737373;
     margin-top: 4px;
   }
+}
+
+.stats-row-3 {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card-sm {
+  text-align: center;
+  padding: 14px 8px;
+  background: #f0f4ff;
+  border-radius: 8px;
+
+  .stat-value-sm {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: #3b82f6;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #737373;
+    margin-top: 2px;
+  }
+}
+
+.analytics-charts-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analytics-chart-card {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 16px;
+
+  h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #333;
+  }
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .bar-label {
+    width: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 20px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1a56db);
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+
+  .bar-count {
+    width: 36px;
+    text-align: right;
+    font-size: 13px;
+    color: #555;
+  }
+}
+
+.io-section {
+  h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: #888;
+  }
+}
+
+.io-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.io-card {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
 }
 </style>

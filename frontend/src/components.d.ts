@@ -38,6 +38,7 @@ declare module 'vue' {
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElUpload: typeof import('element-plus/es')['ElUpload']
     FollowButton: typeof import('./components/FollowButton.vue')['default']
     HubBot: typeof import('./components/HubBot.vue')['default']
     ImageUpload: typeof import('./components/ImageUpload.vue')['default']

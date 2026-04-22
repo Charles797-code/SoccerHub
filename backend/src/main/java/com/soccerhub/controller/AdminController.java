@@ -6,6 +6,7 @@ import com.soccerhub.dto.*;
 import com.soccerhub.entity.*;
 import com.soccerhub.service.AdminService;
 import com.soccerhub.service.MatchService;
+import com.soccerhub.service.MatchEventService;
 import com.soccerhub.service.PlayerService;
 import com.soccerhub.mapper.TransferHistoryLogMapper;
 import com.soccerhub.mapper.PlayerMapper;
@@ -31,6 +32,7 @@ public class AdminController {
     private final AdminService adminService;
     private final MatchService matchService;
     private final PlayerService playerService;
+    private final MatchEventService matchEventService;
     private final TransferHistoryLogMapper transferLogMapper;
     private final PlayerMapper playerMapper;
     private final ClubMapper clubMapper;
@@ -281,5 +283,17 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> deletePlayer(@PathVariable Long id) {
         playerService.deletePlayer(id);
         return ResponseEntity.ok(ApiResponse.success("Player deleted", null));
+    }
+
+    @PostMapping("/matches/finish")
+    @Operation(summary = "Finish a match with events, auto-update standings and player stats")
+    public ResponseEntity<ApiResponse<MatchSchedule>> finishMatch(@RequestBody FinishMatchRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("比赛已结束，积分榜和球员统计已更新", matchEventService.finishMatch(request)));
+    }
+
+    @GetMapping("/matches/{matchId}/events")
+    @Operation(summary = "Get events for a match")
+    public ResponseEntity<ApiResponse<List<MatchEvent>>> getMatchEvents(@PathVariable String matchId) {
+        return ResponseEntity.ok(ApiResponse.success(matchEventService.getMatchEvents(matchId)));
     }
 }

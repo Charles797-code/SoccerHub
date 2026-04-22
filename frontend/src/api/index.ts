@@ -228,7 +228,11 @@ export const adminApi = {
   updatePlayer: (id: number, data: any) =>
     api.put(`/admin/players/${id}`, data),
   deletePlayer: (id: number) =>
-    api.delete(`/admin/players/${id}`)
+    api.delete(`/admin/players/${id}`),
+  finishMatch: (data: any) =>
+    api.post('/admin/matches/finish', data),
+  getMatchEvents: (matchId: string) =>
+    api.get(`/admin/matches/${matchId}/events`)
 }
 
 export const clubAdminApi = {
@@ -262,7 +266,15 @@ export const standingsApi = {
   upsert: (data: any) =>
     api.post('/standings', data),
   delete: (id: number) =>
-    api.delete(`/standings/${id}`)
+    api.delete(`/standings/${id}`),
+  getScorers: (params: any) =>
+    api.get('/standings/scorers', { params }),
+  getAssists: (params: any) =>
+    api.get('/standings/assists', { params }),
+  getYellowCards: (params: any) =>
+    api.get('/standings/yellow-cards', { params }),
+  getRedCards: (params: any) =>
+    api.get('/standings/red-cards', { params })
 }
 
 export const newsApi = {
@@ -298,4 +310,28 @@ export const uploadApi = {
   },
   deleteImage: (path: string) =>
     api.delete('/upload/image', { params: { path } })
+}
+
+export const analyticsApi = {
+  getStats: () =>
+    api.get('/analytics/stats'),
+  exportData: (type: string, format: string = 'xlsx') =>
+    api.get(`/analytics/export/${type}`, {
+      params: { format },
+      responseType: 'blob'
+    }),
+  importPlayers: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/analytics/import/players', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+  importMatches: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/analytics/import/matches', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  }
 }
