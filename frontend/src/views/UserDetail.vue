@@ -167,7 +167,7 @@ async function loadProfile() {
 async function loadPosts() {
   try {
     const res = await api.get(`/social/posts/user/${userId.value}`, { params: { page: 1, pageSize: 20 } })
-    posts.value = res.data.records || []
+    posts.value = res.data.data?.records || []
   } catch (e) {
     console.error(e)
   }
@@ -176,9 +176,10 @@ async function loadPosts() {
 async function toggleFollow() {
   try {
     const res = await api.post(`/social/follow/${userId.value}`)
-    profile.value.isFollowing = res.data.isFollowing
-    profile.value.followerCount += res.data.isFollowing ? 1 : -1
-    ElMessage.success(res.data.isFollowing ? '关注成功' : '已取消关注')
+    const isFollowing = res.data.data?.isFollowing
+    profile.value.isFollowing = isFollowing
+    profile.value.followerCount += isFollowing ? 1 : -1
+    ElMessage.success(isFollowing ? '关注成功' : '已取消关注')
   } catch (e) {
     console.error(e)
   }
@@ -187,8 +188,9 @@ async function toggleFollow() {
 async function toggleLike(post: any) {
   try {
     const res = await api.post(`/social/posts/${post.postId}/like`)
-    post.isLiked = res.data.isLiked
-    post.likeCount += res.data.isLiked ? 1 : -1
+    const isLiked = res.data.data?.isLiked
+    post.isLiked = isLiked
+    post.likeCount += isLiked ? 1 : -1
   } catch (e) {
     console.error(e)
   }
@@ -197,9 +199,10 @@ async function toggleLike(post: any) {
 async function toggleFavorite(post: any) {
   try {
     const res = await api.post(`/social/posts/${post.postId}/favorite`)
-    post.isFavorited = res.data.isFavorited
-    post.favoriteCount += res.data.isFavorited ? 1 : -1
-    ElMessage.success(res.data.isFavorited ? '已收藏' : '已取消收藏')
+    const isFavorited = res.data.data?.isFavorited
+    post.isFavorited = isFavorited
+    post.favoriteCount += isFavorited ? 1 : -1
+    ElMessage.success(isFavorited ? '已收藏' : '已取消收藏')
   } catch (e) {
     console.error(e)
   }
@@ -208,7 +211,7 @@ async function toggleFavorite(post: any) {
 async function showFollowers() {
   try {
     const res = await api.get(`/social/followers/${userId.value}`, { params: { page: 1, pageSize: 50 } })
-    followers.value = res.data.records || []
+    followers.value = res.data.data?.records || []
     showFollowersDialog.value = true
   } catch (e) {
     console.error(e)
@@ -218,7 +221,7 @@ async function showFollowers() {
 async function showFollowing() {
   try {
     const res = await api.get(`/social/following/${userId.value}`, { params: { page: 1, pageSize: 50 } })
-    followingUsers.value = res.data.records || []
+    followingUsers.value = res.data.data?.records || []
     showFollowingDialog.value = true
   } catch (e) {
     console.error(e)

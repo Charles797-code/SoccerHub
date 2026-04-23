@@ -30,9 +30,9 @@ public class SocialController {
         Long currentUserId = getCurrentUserId(authentication);
         UserProfileDTO profile = socialService.getUserProfile(userId, currentUserId);
         if (profile == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(ApiResponse.error("User not found"));
         }
-        return ResponseEntity.ok(profile);
+        return ResponseEntity.ok(ApiResponse.success(profile));
     }
 
     @PutMapping("/profile")
@@ -41,26 +41,25 @@ public class SocialController {
             Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         socialService.updateProfile(userId, request.getNickname(), request.getBio(), request.getFavoriteClubId());
         UserProfileDTO profile = socialService.getUserProfile(userId, userId);
-        return ResponseEntity.ok(profile);
+        return ResponseEntity.ok(ApiResponse.success(profile));
     }
 
     @PostMapping("/follow/{userId}")
     public ResponseEntity<?> toggleFollow(@PathVariable Long userId, Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         if (currentUserId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         boolean isFollowing = socialService.toggleFollow(currentUserId, userId);
-        Map<String, Object> result = new HashMap<>();
-        result.put("isFollowing", isFollowing);
-        result.put("message", isFollowing ? "Followed successfully" : "Unfollowed successfully");
-        return ResponseEntity.ok(result);
+        Map<String, Object> data = new HashMap<>();
+        data.put("isFollowing", isFollowing);
+        return ResponseEntity.ok(ApiResponse.success(isFollowing ? "Followed successfully" : "Unfollowed successfully", data));
     }
 
     @GetMapping("/followers/{userId}")
@@ -71,7 +70,7 @@ public class SocialController {
             Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         Page<UserProfileDTO> result = socialService.getFollowers(userId, page, pageSize);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/following/{userId}")
@@ -82,14 +81,14 @@ public class SocialController {
             Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         Page<UserProfileDTO> result = socialService.getFollowing(userId, page, pageSize);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/circles")
     public ResponseEntity<?> getAllCircles(Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         List<CircleDTO> circles = socialService.getAllCircles(currentUserId);
-        return ResponseEntity.ok(circles);
+        return ResponseEntity.ok(ApiResponse.success(circles));
     }
 
     @GetMapping("/circles/main")
@@ -97,9 +96,9 @@ public class SocialController {
         Long currentUserId = getCurrentUserId(authentication);
         CircleDTO circle = socialService.getMainCircle(currentUserId);
         if (circle == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(ApiResponse.error("Circle not found"));
         }
-        return ResponseEntity.ok(circle);
+        return ResponseEntity.ok(ApiResponse.success(circle));
     }
 
     @GetMapping("/circles/{circleId}")
@@ -107,23 +106,22 @@ public class SocialController {
         Long currentUserId = getCurrentUserId(authentication);
         CircleDTO circle = socialService.getCircle(circleId, currentUserId);
         if (circle == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(ApiResponse.error("Circle not found"));
         }
-        return ResponseEntity.ok(circle);
+        return ResponseEntity.ok(ApiResponse.success(circle));
     }
 
     @PostMapping("/circles/{circleId}/join")
     public ResponseEntity<?> joinCircle(@PathVariable Long circleId, Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         boolean isMember = socialService.joinCircle(circleId, userId);
-        Map<String, Object> result = new HashMap<>();
-        result.put("isMember", isMember);
-        result.put("message", isMember ? "Joined circle successfully" : "Left circle successfully");
-        return ResponseEntity.ok(result);
+        Map<String, Object> data = new HashMap<>();
+        data.put("isMember", isMember);
+        return ResponseEntity.ok(ApiResponse.success(isMember ? "Joined circle successfully" : "Left circle successfully", data));
     }
 
     @GetMapping("/circles/{circleId}/posts")
@@ -134,7 +132,7 @@ public class SocialController {
             Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         Page<PostDTO> result = socialService.getCirclePosts(circleId, page, pageSize, currentUserId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @PostMapping("/posts")
@@ -143,22 +141,22 @@ public class SocialController {
             Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         Post post = socialService.createPost(userId, request.getContent(), request.getImageUrls(), request.getClubId(), request.getCircleId());
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok(ApiResponse.success(post));
     }
 
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable Long postId, Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         socialService.deletePost(postId, userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Post deleted successfully"));
     }
 
     @GetMapping("/posts")
@@ -168,7 +166,7 @@ public class SocialController {
             Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         Page<PostDTO> result = socialService.getPosts(page, pageSize, currentUserId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/posts/user/{userId}")
@@ -179,7 +177,7 @@ public class SocialController {
             Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         Page<PostDTO> result = socialService.getUserPosts(userId, page, pageSize, currentUserId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/posts/{postId}")
@@ -187,37 +185,35 @@ public class SocialController {
         Long currentUserId = getCurrentUserId(authentication);
         PostDTO post = socialService.getPost(postId, currentUserId);
         if (post == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(ApiResponse.error("Post not found"));
         }
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok(ApiResponse.success(post));
     }
 
     @PostMapping("/posts/{postId}/like")
     public ResponseEntity<?> toggleLike(@PathVariable Long postId, Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         boolean isLiked = socialService.toggleLike(postId, userId);
-        Map<String, Object> result = new HashMap<>();
-        result.put("isLiked", isLiked);
-        result.put("message", isLiked ? "Liked successfully" : "Unliked successfully");
-        return ResponseEntity.ok(result);
+        Map<String, Object> data = new HashMap<>();
+        data.put("isLiked", isLiked);
+        return ResponseEntity.ok(ApiResponse.success(isLiked ? "Liked successfully" : "Unliked successfully", data));
     }
 
     @PostMapping("/posts/{postId}/favorite")
     public ResponseEntity<?> toggleFavorite(@PathVariable Long postId, Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         boolean isFavorited = socialService.toggleFavorite(postId, userId);
-        Map<String, Object> result = new HashMap<>();
-        result.put("isFavorited", isFavorited);
-        result.put("message", isFavorited ? "Favorited successfully" : "Unfavorited successfully");
-        return ResponseEntity.ok(result);
+        Map<String, Object> data = new HashMap<>();
+        data.put("isFavorited", isFavorited);
+        return ResponseEntity.ok(ApiResponse.success(isFavorited ? "Favorited successfully" : "Unfavorited successfully", data));
     }
 
     @GetMapping("/favorites")
@@ -227,11 +223,11 @@ public class SocialController {
             Authentication authentication) {
         Long userId = getCurrentUserId(authentication);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
         }
 
         Page<PostDTO> result = socialService.getFavoritePosts(userId, page, pageSize);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/posts/essence")
@@ -241,31 +237,27 @@ public class SocialController {
             Authentication authentication) {
         Long currentUserId = getCurrentUserId(authentication);
         Page<PostDTO> result = socialService.getEssencePosts(page, pageSize, currentUserId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @PostMapping("/admin/posts/{postId}/pin")
     public ResponseEntity<?> pinPost(@PathVariable Long postId, @RequestParam boolean pinned, Authentication authentication) {
         if (!isSuperAdmin(authentication)) {
-            return ResponseEntity.status(403).body("Not authorized");
+            return ResponseEntity.ok(ApiResponse.error("Not authorized"));
         }
 
         socialService.pinPost(postId, pinned);
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", pinned ? "Post pinned successfully" : "Post unpinned successfully");
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(pinned ? "Post pinned successfully" : "Post unpinned successfully"));
     }
 
     @PostMapping("/admin/posts/{postId}/essence")
     public ResponseEntity<?> setEssencePost(@PathVariable Long postId, @RequestParam boolean essence, Authentication authentication) {
         if (!isSuperAdmin(authentication)) {
-            return ResponseEntity.status(403).body("Not authorized");
+            return ResponseEntity.ok(ApiResponse.error("Not authorized"));
         }
 
         socialService.setEssencePost(postId, essence);
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", essence ? "Post marked as essence" : "Post unmarked as essence");
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(essence ? "Post marked as essence" : "Post unmarked as essence"));
     }
 
     @GetMapping("/admin/posts")
@@ -274,12 +266,12 @@ public class SocialController {
             @RequestParam(defaultValue = "20") int pageSize,
             Authentication authentication) {
         if (!isSuperAdmin(authentication)) {
-            return ResponseEntity.status(403).body("Not authorized");
+            return ResponseEntity.ok(ApiResponse.error("Not authorized"));
         }
 
         Long currentUserId = getCurrentUserId(authentication);
         Page<PostDTO> result = socialService.getAllPostsForAdmin(page, pageSize, currentUserId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     private Long getCurrentUserId(Authentication authentication) {

@@ -169,7 +169,7 @@ async function loadClubs() {
 async function loadCircles() {
   try {
     const res = await api.get('/social/circles')
-    const allCircles = res.data || []
+    const allCircles = res.data.data || []
     circles.value = allCircles.filter((c: any) => c.clubId !== null)
     const mainCircle = allCircles.find((c: any) => c.clubId === null)
     if (mainCircle) {
@@ -191,7 +191,7 @@ async function loadPosts() {
     } else {
       res = await api.get('/social/posts', { params: { page: currentPage.value, pageSize } })
     }
-    const newPosts = res.data.records || []
+    const newPosts = res.data.data?.records || []
     posts.value = currentPage.value === 1 ? newPosts : [...posts.value, ...newPosts]
     hasMore.value = newPosts.length === pageSize
   } catch (e) {
@@ -220,9 +220,10 @@ async function joinCircle() {
   if (!currentCircleId.value) return
   try {
     const res = await api.post(`/social/circles/${currentCircleId.value}/join`)
-    currentCircle.value.isMember = res.data.isMember
-    currentCircle.value.memberCount += res.data.isMember ? 1 : -1
-    ElMessage.success(res.data.isMember ? '已加入圈子' : '已退出圈子')
+    const isMember = res.data.data?.isMember
+    currentCircle.value.isMember = isMember
+    currentCircle.value.memberCount += isMember ? 1 : -1
+    ElMessage.success(isMember ? '已加入圈子' : '已退出圈子')
   } catch (e) {
     console.error(e)
   }
@@ -255,8 +256,9 @@ async function createPost() {
 async function toggleLike(post: any) {
   try {
     const res = await api.post(`/social/posts/${post.postId}/like`)
-    post.isLiked = res.data.isLiked
-    post.likeCount += res.data.isLiked ? 1 : -1
+    const isLiked = res.data.data?.isLiked
+    post.isLiked = isLiked
+    post.likeCount += isLiked ? 1 : -1
   } catch (e) {
     console.error(e)
   }
@@ -265,9 +267,10 @@ async function toggleLike(post: any) {
 async function toggleFavorite(post: any) {
   try {
     const res = await api.post(`/social/posts/${post.postId}/favorite`)
-    post.isFavorited = res.data.isFavorited
-    post.favoriteCount += res.data.isFavorited ? 1 : -1
-    ElMessage.success(res.data.isFavorited ? '已收藏' : '已取消收藏')
+    const isFavorited = res.data.data?.isFavorited
+    post.isFavorited = isFavorited
+    post.favoriteCount += isFavorited ? 1 : -1
+    ElMessage.success(isFavorited ? '已收藏' : '已取消收藏')
   } catch (e) {
     console.error(e)
   }
@@ -276,8 +279,9 @@ async function toggleFavorite(post: any) {
 async function toggleFollowUser(post: any) {
   try {
     const res = await api.post(`/social/follow/${post.userId}`)
-    post.isFollowing = res.data.isFollowing
-    ElMessage.success(res.data.isFollowing ? '关注成功' : '已取消关注')
+    const isFollowing = res.data.data?.isFollowing
+    post.isFollowing = isFollowing
+    ElMessage.success(isFollowing ? '关注成功' : '已取消关注')
   } catch (e) {
     console.error(e)
   }

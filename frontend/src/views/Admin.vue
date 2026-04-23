@@ -1243,7 +1243,7 @@ async function handleScrapeNews() {
 async function fetchCircles() {
   try {
     const res = await axios.get('/api/social/circles')
-    circles.value = res.data || []
+    circles.value = res.data.data || []
   } catch (e) { console.error(e) }
 }
 
@@ -1255,8 +1255,8 @@ async function fetchPosts() {
         pageSize: pageSize.value
       }
     })
-    posts.value = res.data.records || []
-    postTotal.value = res.data.total || 0
+    posts.value = res.data.data?.records || []
+    postTotal.value = res.data.data?.total || 0
   } catch (e: any) { 
     console.error(e)
     ElMessage.error(e.response?.data?.message || '获取帖子失败')
