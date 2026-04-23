@@ -3,17 +3,16 @@ package com.soccerhub.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.soccerhub.entity.RatingRecord;
-import com.soccerhub.entity.SysUser;
-import com.soccerhub.entity.UserClubFollow;
 import com.soccerhub.mapper.RatingRecordMapper;
-import com.soccerhub.mapper.SysUserMapper;
-import com.soccerhub.mapper.UserClubFollowMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +23,6 @@ import java.util.Map;
 public class RatingService {
 
     private final RatingRecordMapper ratingMapper;
-    private final UserClubFollowMapper followMapper;
-    private final SysUserMapper userMapper;
     private final JdbcTemplate jdbcTemplate;
 
     @Transactional
@@ -33,83 +30,62 @@ public class RatingService {
                                              Integer score, String comment, Long clubId,
                                              String ratingType, String matchId) {
         Map<String, Object> result = new HashMap<>();
-        
-        SysUser user = userMapper.selectById(userId);
-        
-        // Check follow relationship for non-SUPER_ADMIN
-        if (!"SUPER_ADMIN".equals(user.getRole())) {
-            QueryWrapper<UserClubFollow> followWrapper = new QueryWrapper<>();
-            followWrapper.eq("USER_ID", userId);
-            followWrapper.eq("CLUB_ID", clubId);
-            if (followMapper.selectCount(followWrapper) == 0) {
-                result.put("success", false);
-                result.put("message", "必须先关注该俱乐部才能评分！");
-                return result;
-            }
-        }
 
-        // Call Oracle stored procedure
         try {
-            String procCall = """
-                BEGIN
-                    osp_Submit_User_Rating(
-                        p_User_ID => ?,
-                        p_Target_ID => ?,
-                        p_Target_Type => ?,
-                        p_Score => ?,
-                        p_Comment => ?,
-                        p_Club_ID => ?,
-                        p_Rating_Type => ?,
-                        p_Match_ID => ?,
-                        p_Result => ?,
-                        p_Record_ID => ?
-                    );
-                END;
-                """;
+            String sql = "{call osp_Submit_User_Rating(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
             
-            Map<String, Object> procResult = jdbcTemplate.call(conn -> {
-                var cs = conn.prepareCall(procCall);
+            Map<String, Object> inParams = new HashMap<>();
+            inParams.put("p_User_ID", userId);
+            inParams.put("p_Target_ID", targetId);
+            inParams.put("p_Target_Type", targetType);
+            inParams.put("p_Score", score);
+            inParams.put("p_Comment", comment);
+            inParams.put("p_Club_ID", clubId);
+            inParams.put("p_Rating_Type", ratingType != null ? ratingType : "GENERAL");
+            inParams.put("p_Match_ID", matchId);
+            
+            List<SqlParameter> declaredParams = List.of(
+                new SqlParameter("p_User_ID", Types.NUMERIC),
+                new SqlParameter("p_Target_ID", Types.NUMERIC),
+                new SqlParameter("p_Target_Type", Types.VARCHAR),
+                new SqlParameter("p_Score", Types.NUMERIC),
+                new SqlParameter("p_Comment", Types.VARCHAR),
+                new SqlParameter("p_Club_ID", Types.NUMERIC),
+                new SqlParameter("p_Rating_Type", Types.VARCHAR),
+                new SqlParameter("p_Match_ID", Types.VARCHAR),
+                new SqlOutParameter("p_Result", Types.VARCHAR),
+                new SqlOutParameter("p_Record_ID", Types.NUMERIC)
+            );
+            
+            Map<String, Object> outParams = jdbcTemplate.call(conn -> {
+                var cs = conn.prepareCall(sql);
                 cs.setLong(1, userId);
                 cs.setLong(2, targetId);
                 cs.setString(3, targetType);
                 cs.setInt(4, score);
                 cs.setString(5, comment);
-                cs.setLong(6, clubId);
+                cs.setLong(6, clubId != null ? clubId : 0);
                 cs.setString(7, ratingType != null ? ratingType : "GENERAL");
                 cs.setString(8, matchId);
-                cs.registerOutParameter(9, oracle.jdbc.OracleTypes.VARCHAR);
-                cs.registerOutParameter(10, oracle.jdbc.OracleTypes.NUMBER);
+                cs.registerOutParameter(9, Types.VARCHAR);
+                cs.registerOutParameter(10, Types.NUMERIC);
                 return cs;
-            }, List.of(new org.springframework.jdbc.core.SqlParameter("result", oracle.jdbc.OracleTypes.VARCHAR)));
-
-            String procMessage = (String) procResult.get("p_Result");
-            Number recordIdNum = (Number) procResult.get("p_Record_ID");
-
-            if (procMessage != null && procMessage.startsWith("SUCCESS")) {
+            }, declaredParams);
+            
+            String procResult = (String) outParams.get("p_Result");
+            Number recordIdNum = (Number) outParams.get("p_Record_ID");
+            
+            if (procResult != null && procResult.startsWith("SUCCESS")) {
                 result.put("success", true);
-                result.put("message", procMessage);
+                result.put("message", procResult);
                 result.put("recordId", recordIdNum != null ? recordIdNum.longValue() : 0);
             } else {
                 result.put("success", false);
-                result.put("message", procMessage);
+                result.put("message", procResult != null ? procResult : "评分失败");
             }
         } catch (Exception e) {
-            // Fallback to direct insert if SP fails
-            RatingRecord record = new RatingRecord();
-            record.setUserId(userId);
-            record.setTargetId(targetId);
-            record.setTargetType(targetType);
-            record.setScore(score);
-            record.setCommentText(comment);
-            record.setRatingType(ratingType != null ? ratingType : "GENERAL");
-            record.setMatchId(matchId);
-            record.setIsCollapsed(0);
-            record.setCreatedAt(LocalDateTime.now());
-            ratingMapper.insert(record);
-            
-            result.put("success", true);
-            result.put("message", "评分成功！");
-            result.put("recordId", record.getRecordId());
+            result.put("success", false);
+            result.put("message", "评分失败：" + e.getMessage());
         }
         
         return result;

@@ -18,6 +18,8 @@ public class SysUser {
     private String role;
     private String status;
     private Long managedClubId;
+    private String bio;
+    private Long favoriteClubId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;

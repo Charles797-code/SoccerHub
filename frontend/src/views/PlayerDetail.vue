@@ -126,9 +126,18 @@ onMounted(async () => {
 
 async function submitRating() {
   const playerId = Number(route.params.id)
+  if (!player.value?.clubId) {
+    ElMessage.error('无法获取球员所属俱乐部')
+    return
+  }
   try {
     ratingLoading.value = true
-    await ratingApi.submit({ targetType: 'PLAYER', targetId: playerId, score: ratingScore.value })
+    await ratingApi.submit({ 
+      targetType: 'PLAYER', 
+      targetId: playerId, 
+      score: ratingScore.value,
+      clubId: player.value.clubId
+    })
     ElMessage.success('评分成功！')
 
     const res = await playerApi.getById(playerId)

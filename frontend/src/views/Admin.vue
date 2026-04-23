@@ -428,6 +428,62 @@
             <el-pagination v-model:current-page="playerPage" :page-size="pageSize" :total="playerTotal" layout="prev, pager, next" @current-change="fetchPlayers" />
           </div>
         </el-tab-pane>
+        <el-tab-pane label="社区管理" name="community">
+          <div class="toolbar">
+            <el-select v-model="postFilterCircle" placeholder="圈子筛选" clearable style="width:160px" @change="fetchPosts">
+              <el-option label="主社区" :value="0" />
+              <el-option v-for="c in circles" :key="c.circleId" :label="c.name" :value="c.circleId" />
+            </el-select>
+            <el-input v-model="postKeyword" placeholder="搜索帖子内容" clearable style="width:200px" @keyup.enter="fetchPosts" />
+            <el-button type="primary" @click="fetchPosts">搜索</el-button>
+          </div>
+          <el-table :data="posts" stripe>
+            <el-table-column prop="postId" label="ID" width="70" />
+            <el-table-column label="发布者" width="120">
+              <template #default="{ row }">
+                <div class="post-user-cell">
+                  <span class="user-name">{{ row.userNickname }}</span>
+                  <span v-if="row.userFavoriteClubName" class="user-club-sm">{{ row.userFavoriteClubName }}</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="content" label="内容" min-width="250" show-overflow-tooltip />
+            <el-table-column label="圈子" width="100">
+              <template #default="{ row }">
+                <el-tag v-if="row.circleName" size="small" type="info">{{ row.circleName }}</el-tag>
+                <span v-else>主社区</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="统计" width="100">
+              <template #default="{ row }">
+                <span class="stat-sm">👍{{ row.likeCount || 0 }}</span>
+                <span class="stat-sm">⭐{{ row.favoriteCount || 0 }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag v-if="row.isPinned" type="warning" size="small">置顶</el-tag>
+                <el-tag v-if="row.isEssence" type="success" size="small">精华</el-tag>
+                <span v-if="!row.isPinned && !row.isEssence">-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="发布时间" width="140">
+              <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="200">
+              <template #default="{ row }">
+                <el-button v-if="!row.isPinned" type="warning" size="small" @click="handlePinPost(row.postId, true)">置顶</el-button>
+                <el-button v-else size="small" @click="handlePinPost(row.postId, false)">取消置顶</el-button>
+                <el-button v-if="!row.isEssence" type="success" size="small" @click="handleEssencePost(row.postId, true)">精华</el-button>
+                <el-button v-else size="small" @click="handleEssencePost(row.postId, false)">取消精华</el-button>
+                <el-button type="danger" size="small" @click="handleDeletePost(row.postId)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div class="pagination-wrapper">
+            <el-pagination v-model:current-page="postPage" :page-size="pageSize" :total="postTotal" layout="prev, pager, next" @current-change="fetchPosts" />
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -706,6 +762,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi, clubApi, playerApi, newsApi, analyticsApi } from '@/api'
 import ImageUpload from '@/components/ImageUpload.vue'
 import { Refresh } from '@element-plus/icons-vue'
+import axios from 'axios'
 
 const activeTab = ref('stats')
 const pageSize = ref(20)
@@ -771,6 +828,13 @@ const matchStatusMap: Record<string, string> = { PENDING: '未开始', IN_PROGRE
 const transferTypeMap: Record<string, string> = { IN: '转入', OUT: '转出', LOAN: '租借', FREE: '自由身' }
 const playerStatusMap: Record<string, string> = { ACTIVE: '活跃', INJURED: '受伤', FREE: '自由身', RETIRED: '退役' }
 
+const posts = ref<any[]>([])
+const postPage = ref(1)
+const postTotal = ref(0)
+const postFilterCircle = ref<any>('')
+const postKeyword = ref('')
+const circles = ref<any[]>([])
+
 function matchStatusType(status: string) {
   if (status === 'FINISHED') return 'success'
   if (status === 'IN_PROGRESS') return 'warning'
@@ -800,6 +864,7 @@ watch(activeTab, (tab) => {
   if (tab === 'clubs' && clubs.value.length === 0) fetchClubs()
   if (tab === 'news' && newsList.value.length === 0) fetchNews()
   if (tab === 'players' && players.value.length === 0) fetchPlayers()
+  if (tab === 'community' && posts.value.length === 0) { fetchPosts(); fetchCircles() }
 })
 
 onMounted(() => {
@@ -1174,6 +1239,60 @@ async function handleScrapeNews() {
     scraping.value = false
   }
 }
+
+async function fetchCircles() {
+  try {
+    const res = await axios.get('/api/social/circles')
+    circles.value = res.data || []
+  } catch (e) { console.error(e) }
+}
+
+async function fetchPosts() {
+  try {
+    const res = await axios.get('/api/social/admin/posts', {
+      params: {
+        page: postPage.value,
+        pageSize: pageSize.value
+      }
+    })
+    posts.value = res.data.records || []
+    postTotal.value = res.data.total || 0
+  } catch (e: any) { 
+    console.error(e)
+    ElMessage.error(e.response?.data?.message || '获取帖子失败')
+  }
+}
+
+async function handlePinPost(postId: number, pinned: boolean) {
+  try {
+    await axios.post(`/api/social/admin/posts/${postId}/pin`, null, { params: { pinned } })
+    ElMessage.success(pinned ? '帖子已置顶' : '帖子已取消置顶')
+    fetchPosts()
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.message || '操作失败')
+  }
+}
+
+async function handleEssencePost(postId: number, essence: boolean) {
+  try {
+    await axios.post(`/api/social/admin/posts/${postId}/essence`, null, { params: { essence } })
+    ElMessage.success(essence ? '帖子已设为精华' : '帖子已取消精华')
+    fetchPosts()
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.message || '操作失败')
+  }
+}
+
+async function handleDeletePost(postId: number) {
+  try {
+    await ElMessageBox.confirm('确定删除该帖子？', '确认', { type: 'warning' })
+    await axios.delete(`/api/social/posts/${postId}`)
+    ElMessage.success('帖子已删除')
+    fetchPosts()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '删除失败')
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -1343,5 +1462,27 @@ async function handleScrapeNews() {
   border-radius: 10px;
   padding: 16px;
   border: 1px solid #e5e7eb;
+}
+
+.post-user-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .user-name {
+    font-weight: 500;
+    color: #333;
+  }
+
+  .user-club-sm {
+    font-size: 11px;
+    color: #888;
+  }
+}
+
+.stat-sm {
+  font-size: 12px;
+  color: #666;
+  margin-right: 8px;
 }
 </style>

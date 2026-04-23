@@ -3,7 +3,9 @@
     <!-- Top Navigation -->
     <header class="top-nav">
       <div class="nav-brand">
-        <router-link to="/">足球社区</router-link>
+        <router-link to="/" class="logo-link">
+          <span class="logo-text">Soccer<span class="logo-highlight">Hub</span></span>
+        </router-link>
       </div>
       <div class="nav-search">
         <el-input v-model="searchKeyword" placeholder="搜索俱乐部、球员..." size="default" clearable
@@ -96,6 +98,12 @@
             <Document />
           </el-icon>
           <span>资讯</span>
+        </div>
+        <div class="nav-item" :class="{ active: $route.path === '/community' }" @click="$router.push('/community')">
+          <el-icon>
+            <ChatDotRound />
+          </el-icon>
+          <span>社区</span>
         </div>
         <div class="nav-divider"></div>
         <div class="nav-item" :class="{ active: $route.path === '/profile' }" @click="$router.push('/profile')">
@@ -198,6 +206,29 @@ function handleCommand(command: string) {
     font-weight: 700;
     color: #ffffff;
     white-space: nowrap;
+
+    .logo-link {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-text {
+      font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo-highlight {
+      color: #fbbf24;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
   }
 
   .nav-search {

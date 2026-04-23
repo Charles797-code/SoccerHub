@@ -1,7 +1,9 @@
 <template>
   <div class="home-page page-container">
     <div class="hero-section">
-      <h1>欢迎来到足球社区</h1>
+      <h1 class="hero-title">
+        欢迎来到 <span class="logo-text">Soccer<span class="logo-highlight">Hub</span></span>
+      </h1>
       <p>您的专业足球资讯与社区平台</p>
     </div>
 
@@ -362,12 +364,25 @@ function goToLeague(league: string) {
   margin-bottom: 32px;
   padding: 40px 0;
 
-  h1 {
+  .hero-title {
     font-size: 28px;
     font-weight: 700;
     margin: 0 0 8px;
     color: #262626;
     letter-spacing: -0.5px;
+  }
+
+  .logo-text {
+    font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+    font-weight: 800;
+    color: #1a56db;
+  }
+
+  .logo-highlight {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   p {

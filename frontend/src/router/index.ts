@@ -86,6 +86,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/Profile.vue')
       },
       {
+        path: 'community',
+        name: 'Community',
+        component: () => import('@/views/Community.vue')
+      },
+      {
+        path: 'user/:id',
+        name: 'UserDetail',
+        component: () => import('@/views/UserDetail.vue')
+      },
+      {
         path: 'admin',
         name: 'Admin',
         component: () => import('@/views/Admin.vue'),
