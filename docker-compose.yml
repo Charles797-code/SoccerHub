@@ -10,23 +10,5 @@ services:
       - oracle21_data:/opt/oracle/oradata
     restart: unless-stopped
 
-  backend:
-    build: ./backend
-    container_name: soccer_backend
-    ports:
-      - "8080:8080"
-    depends_on:
-      - oracle21
-    restart: unless-stopped
-
-  frontend:
-    build: ./frontend
-    container_name: soccer_frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
-
 volumes:
   oracle21_data:
