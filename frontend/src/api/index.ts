@@ -335,3 +335,22 @@ export const analyticsApi = {
     })
   }
 }
+
+export const socialApi = {
+  getCircles: () =>
+    api.get('/social/circles'),
+  getPosts: (params: any) =>
+    api.get('/social/admin/posts', { params }),
+  pinPost: (postId: number, pinned: boolean) =>
+    api.post(`/social/admin/posts/${postId}/pin`, null, { params: { pinned } }),
+  essencePost: (postId: number, essence: boolean) =>
+    api.post(`/social/admin/posts/${postId}/essence`, null, { params: { essence } }),
+  deletePost: (postId: number) =>
+    api.delete(`/social/posts/${postId}`),
+  getComments: (postId: number, params: any) =>
+    api.get(`/social/posts/${postId}/comments`, { params }),
+  addComment: (postId: number, data: any) =>
+    api.post(`/social/posts/${postId}/comments`, data),
+  deleteComment: (commentId: number) =>
+    api.delete(`/social/comments/${commentId}`)
+}

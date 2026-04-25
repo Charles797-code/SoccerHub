@@ -98,9 +98,7 @@ function getFullUrl(path: string) {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path
   }
-  // Handle relative paths - prepend base URL
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
-  return baseUrl + path
+  return '/api' + path
 }
 </script>
 

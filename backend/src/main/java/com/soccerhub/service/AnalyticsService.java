@@ -64,7 +64,7 @@ public class AnalyticsService {
         overview.setTotalGoals(matchEventMapper.selectCount(goalW));
 
         QueryWrapper<MatchEvent> assistW = new QueryWrapper<>();
-        assistW.eq("EVENT_TYPE", "GOAL").isNotNull("ASSIST_PLAYER_ID");
+        assistW.eq("EVENT_TYPE", "ASSIST");
         overview.setTotalAssists(matchEventMapper.selectCount(assistW));
 
         QueryWrapper<MatchEvent> yellowW = new QueryWrapper<>();

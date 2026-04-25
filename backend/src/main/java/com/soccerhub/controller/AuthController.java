@@ -58,6 +58,9 @@ public class AuthController {
     @GetMapping("/profile")
     @Operation(summary = "Get current user profile")
     public ResponseEntity<ApiResponse<SysUser>> getProfile(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Not authenticated"));
+        }
         SysUser user = authService.getCurrentUser(authentication.getName());
         return ResponseEntity.ok(ApiResponse.success(user));
     }

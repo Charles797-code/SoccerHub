@@ -8,6 +8,7 @@ import com.soccerhub.entity.*;
 import com.soccerhub.mapper.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,19 +39,36 @@ public class MatchEventService {
         match.setAwayScore(request.getAwayScore());
         match.setStatus("FINISHED");
         match.setUpdatedAt(LocalDateTime.now());
-        matchMapper.updateById(match);
 
         if (request.getEvents() != null) {
-            for (FinishMatchRequest.MatchEventInput input : request.getEvents()) {
-                MatchEvent event = new MatchEvent();
-                event.setMatchId(request.getMatchId());
-                event.setEventType(input.getEventType());
-                event.setPlayerId(input.getPlayerId());
-                event.setAssistPlayerId(input.getAssistPlayerId());
-                event.setClubId(input.getClubId());
-                event.setMatchMinute(input.getMatchMinute());
-                event.setCreatedAt(LocalDateTime.now());
-                matchEventMapper.insert(event);
+            for (int attempt = 0; attempt < 3; attempt++) {
+                try {
+                    for (FinishMatchRequest.MatchEventInput input : request.getEvents()) {
+                        MatchEvent event = new MatchEvent();
+                        event.setMatchId(request.getMatchId());
+                        event.setEventType(input.getEventType());
+                        event.setPlayerId(input.getPlayerId());
+                        event.setAssistPlayerId(input.getAssistPlayerId());
+                        event.setClubId(input.getClubId());
+                        event.setMatchMinute(input.getMatchMinute());
+                        event.setCreatedAt(LocalDateTime.now());
+                        matchEventMapper.insert(event);
+                    }
+                    break;
+                } catch (TransientDataAccessException e) {
+                    if (attempt == 2) throw new RuntimeException("插入比赛事件失败（死锁），请重试", e);
+                    try { Thread.sleep(100L * (attempt + 1)); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+                }
+            }
+        }
+
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                matchMapper.updateById(match);
+                break;
+            } catch (TransientDataAccessException e) {
+                if (attempt == 2) throw new RuntimeException("更新比赛状态失败（死锁），请重试", e);
+                try { Thread.sleep(100L * (attempt + 1)); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
             }
         }
 
