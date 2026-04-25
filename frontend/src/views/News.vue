@@ -135,6 +135,7 @@ function goToNews(articleId: number) {
 function getImageUrl(path: string) {
   if (!path) return ''
   if (path.startsWith('http://') || path.startsWith('https://')) return path
+  if (path.startsWith('/api/')) return path
   return '/api' + path
 }
 

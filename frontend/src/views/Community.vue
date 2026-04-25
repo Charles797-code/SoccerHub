@@ -40,7 +40,7 @@
           </el-button>
         </div>
 
-        <div class="create-post-card">
+        <div class="create-post-card" v-if="canPost">
           <el-input v-model="newPostContent" type="textarea" :rows="3" placeholder="分享你的想法..." maxlength="500" show-word-limit />
           <div class="post-actions">
             <el-select v-model="newPostClubId" placeholder="关联俱乐部(可选)" clearable filterable size="small" style="width:200px">
@@ -48,6 +48,11 @@
             </el-select>
             <el-button type="primary" @click="createPost" :loading="postLoading" :disabled="!newPostContent.trim()">发布</el-button>
           </div>
+        </div>
+        <div v-else-if="currentCircleId !== null" class="join-circle-card">
+          <el-icon :size="32" color="#a3a3a3"><UserFilled /></el-icon>
+          <p>加入圈子后才能发帖</p>
+          <el-button type="primary" @click="joinCircle">加入圈子</el-button>
         </div>
 
         <el-tabs v-model="activeTab" class="posts-tabs">
@@ -96,6 +101,54 @@
               <span class="post-stat" :class="{ favorited: post.isFavorited }" @click="toggleFavorite(post)">
                 <el-icon><CollectionTag /></el-icon> {{ post.favoriteCount }}
               </span>
+              <span class="post-stat comment-trigger" @click.stop="toggleComments(post)">
+                <el-icon><ChatDotRound /></el-icon> {{ post.commentCount || 0 }}
+              </span>
+            </div>
+
+            <!-- 评论区 -->
+            <div v-if="post.showComments" class="post-comments">
+              <div v-if="canPost" class="comment-input">
+                <el-input
+                  v-model="post.newComment"
+                  size="small"
+                  :rows="2"
+                  type="textarea"
+                  placeholder="写下你的评论..."
+                  maxlength="500"
+                />
+                <div class="comment-actions">
+                  <el-button type="primary" size="small" :loading="post.commentSubmitting" :disabled="!post.newComment?.trim()" @click="submitComment(post)">
+                    发表
+                  </el-button>
+                </div>
+              </div>
+              <div v-else class="comment-join-hint">
+                <span>加入圈子后即可参与评论</span>
+              </div>
+              <div class="comments-list">
+                <div v-if="!post.comments || post.comments.length === 0" class="no-comments">暂无评论，快来发表第一条吧</div>
+                <div v-for="comment in post.comments" :key="comment.commentId" class="comment-item">
+                  <div class="comment-avatar">
+                    <img v-if="comment.userAvatar" :src="getImageUrl(comment.userAvatar)" />
+                    <span v-else>{{ (comment.userNickname || comment.userName || '?')?.charAt(0) }}</span>
+                  </div>
+                  <div class="comment-body">
+                    <div class="comment-header">
+                      <span class="comment-user">{{ comment.userNickname || comment.userName || `用户${comment.userId}` }}</span>
+                      <span class="comment-time">{{ formatTime(comment.createdAt) }}</span>
+                      <el-button
+                        v-if="comment.userId === currentUserId || authStore.user?.role === 'SUPER_ADMIN'"
+                        type="danger"
+                        text
+                        size="small"
+                        @click="deleteComment(post, comment.commentId)"
+                      >删除</el-button>
+                    </div>
+                    <div class="comment-text">{{ comment.content }}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <el-empty v-if="posts.length === 0 && !loading" description="暂无帖子，快来发布第一条吧！" />
@@ -119,10 +172,16 @@ import { ElMessage } from 'element-plus'
 import { clubApi } from '@/api'
 import api from '@/api'
 import { useAuthStore } from '@/stores/auth'
+import { ChatDotRound, UserFilled } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const currentUserId = computed(() => authStore.user?.userId)
+const canPost = computed(() => {
+  if (!authStore.isLoggedIn) return false
+  if (currentCircleId.value === null) return true
+  return currentCircle.value?.isMember === true
+})
 const circles = ref<any[]>([])
 const currentCircleId = ref<number | null>(null)
 const currentCircle = ref<any>(null)
@@ -313,6 +372,53 @@ function formatTime(time: string) {
   if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`
   return d.toLocaleDateString('zh-CN')
 }
+
+async function toggleComments(post: any) {
+  if (post.showComments) {
+    post.showComments = false
+    return
+  }
+  post.showComments = true
+  if (!post.comments) {
+    post.comments = []
+    await fetchComments(post)
+  }
+}
+
+async function fetchComments(post: any) {
+  try {
+    const res = await api.get(`/social/posts/${post.postId}/comments`, { params: { page: 1, pageSize: 20 } })
+    post.comments = res.data.data?.records || []
+    post.commentCount = res.data.data?.total || post.comments.length
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function submitComment(post: any) {
+  if (!post.newComment?.trim()) return
+  post.commentSubmitting = true
+  try {
+    await api.post(`/social/posts/${post.postId}/comments`, { content: post.newComment.trim() })
+    post.newComment = ''
+    await fetchComments(post)
+    ElMessage.success('评论成功')
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.message || '评论失败')
+  } finally {
+    post.commentSubmitting = false
+  }
+}
+
+async function deleteComment(post: any, commentId: number) {
+  try {
+    await api.delete(`/social/comments/${commentId}`)
+    ElMessage.success('评论已删除')
+    await fetchComments(post)
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.message || '删除失败')
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -459,6 +565,22 @@ function formatTime(time: string) {
     justify-content: space-between;
     align-items: center;
     margin-top: 12px;
+  }
+}
+
+.join-circle-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 32px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  color: #a3a3a3;
+
+  p {
+    margin: 12px 0;
+    font-size: 14px;
+    color: #737373;
   }
 }
 
@@ -614,5 +736,92 @@ function formatTime(time: string) {
 .load-more {
   text-align: center;
   padding: 20px;
+}
+
+.post-comments {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+
+  .comment-input {
+    margin-bottom: 12px;
+
+    .comment-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+  }
+
+  .comment-join-hint {
+    text-align: center;
+    padding: 8px;
+    font-size: 13px;
+    color: #a3a3a3;
+    margin-bottom: 12px;
+  }
+
+  .no-comments {
+    text-align: center;
+    padding: 16px;
+    color: #a3a3a3;
+    font-size: 13px;
+  }
+
+  .comment-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(26, 86, 219, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #1a56db;
+      flex-shrink: 0;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .comment-body {
+      flex: 1;
+      min-width: 0;
+
+      .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 2px;
+
+        .comment-user {
+          font-size: 13px;
+          font-weight: 600;
+          color: #262626;
+        }
+
+        .comment-time {
+          font-size: 11px;
+          color: #a3a3a3;
+        }
+      }
+
+      .comment-text {
+        font-size: 14px;
+        color: #404040;
+        line-height: 1.5;
+        word-break: break-word;
+      }
+    }
+  }
 }
 </style>

@@ -290,4 +290,43 @@ public class SocialController {
         SysUser user = authService.getCurrentUser(username);
         return user != null && "SUPER_ADMIN".equals(user.getRole());
     }
+
+    // ==================== Post Comments ====================
+
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<?> getPostComments(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        var comments = socialService.getPostComments(postId, page, pageSize);
+        return ResponseEntity.ok(ApiResponse.success(comments));
+    }
+
+    @PostMapping("/posts/{postId}/comments")
+    public ResponseEntity<?> addComment(
+            @PathVariable Long postId,
+            @RequestBody Map<String, Object> body,
+            Authentication authentication) {
+        Long userId = getCurrentUserId(authentication);
+        if (userId == null) {
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
+        }
+        String content = (String) body.get("content");
+        Long parentId = body.get("parentId") != null ? ((Number) body.get("parentId")).longValue() : null;
+        var comment = socialService.addComment(postId, userId, content, parentId);
+        return ResponseEntity.ok(ApiResponse.success(comment));
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<?> deleteComment(
+            @PathVariable Long commentId,
+            Authentication authentication) {
+        Long userId = getCurrentUserId(authentication);
+        if (userId == null) {
+            return ResponseEntity.ok(ApiResponse.error("Not authenticated"));
+        }
+        boolean isAdmin = isSuperAdmin(authentication);
+        socialService.deleteComment(commentId, userId, isAdmin);
+        return ResponseEntity.ok(ApiResponse.success("Comment deleted", null));
+    }
 }

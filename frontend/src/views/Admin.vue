@@ -359,10 +359,6 @@
             </el-select>
             <el-button type="primary" @click="fetchNews">搜索</el-button>
             <el-button type="success" @click="openNewsDialog()">新增新闻</el-button>
-            <el-button :loading="scraping" @click="handleScrapeNews">
-              <el-icon><Refresh /></el-icon>
-              抓取新闻
-            </el-button>
           </div>
           <el-table :data="newsList" stripe>
             <el-table-column prop="articleId" label="ID" width="70" />
@@ -635,7 +631,9 @@
           <el-input v-model="clubForm.shortName" />
         </el-form-item>
         <el-form-item label="联赛">
-          <el-input v-model="clubForm.league" />
+          <el-select v-model="clubForm.league" placeholder="选择或输入联赛" filterable allow-create clearable style="width:100%">
+            <el-option v-for="l in availableLeagues" :key="l" :label="l" :value="l" />
+          </el-select>
         </el-form-item>
         <el-form-item label="城市">
           <el-input v-model="clubForm.city" />
@@ -685,7 +683,7 @@
           <el-input v-model="newsForm.tags" placeholder="多个标签用逗号分隔" />
         </el-form-item>
         <el-form-item label="封面图">
-          <el-input v-model="newsForm.coverImageUrl" placeholder="图片URL" />
+          <ImageUpload v-model="newsForm.coverImageUrl" placeholder="上传封面" alt="封面图" />
         </el-form-item>
         <el-form-item label="发布状态">
           <el-select v-model="newsForm.isPublished" style="width:100%">
@@ -759,10 +757,8 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminApi, clubApi, playerApi, newsApi, analyticsApi } from '@/api'
+import { adminApi, clubApi, playerApi, newsApi, analyticsApi, socialApi } from '@/api'
 import ImageUpload from '@/components/ImageUpload.vue'
-import { Refresh } from '@element-plus/icons-vue'
-import axios from 'axios'
 
 const activeTab = ref('stats')
 const pageSize = ref(20)
@@ -803,7 +799,6 @@ const newsKeyword = ref('')
 const newsFilterClub = ref<any>('')
 const newsDialogVisible = ref(false)
 const newsForm = ref<any>({})
-const scraping = ref(false)
 
 const allClubs = ref<any[]>([])
 const allPlayers = ref<any[]>([])
@@ -820,6 +815,7 @@ const transferForm = ref<any>({})
 
 const clubDialogVisible = ref(false)
 const clubForm = ref<any>({})
+const availableLeagues = ref<string[]>([])
 
 const playerDialogVisible = ref(false)
 const playerForm = ref<any>({})
@@ -1073,7 +1069,15 @@ async function handleDeleteTransfer(logId: number) {
   } catch { }
 }
 
+async function fetchLeagues() {
+  try {
+    const res = await clubApi.getLeagues()
+    availableLeagues.value = res.data.data || []
+  } catch (e) { console.error(e) }
+}
+
 function openClubDialog(row?: any) {
+  fetchLeagues()
   if (row) {
     clubForm.value = { ...row }
   } else {
@@ -1226,38 +1230,22 @@ async function handleImport(type: string, file: any) {
   }
 }
 
-async function handleScrapeNews() {
-  scraping.value = true
-  try {
-    const res = await newsApi.scrape()
-    const count = res.data.data?.length || 0
-    ElMessage.success(`成功抓取 ${count} 条新闻`)
-    fetchNews()
-  } catch (e: any) {
-    ElMessage.error(e.response?.data?.message || '抓取失败')
-  } finally {
-    scraping.value = false
-  }
-}
-
 async function fetchCircles() {
   try {
-    const res = await axios.get('/api/social/circles')
+    const res = await socialApi.getCircles()
     circles.value = res.data.data || []
   } catch (e) { console.error(e) }
 }
 
 async function fetchPosts() {
   try {
-    const res = await axios.get('/api/social/admin/posts', {
-      params: {
-        page: postPage.value,
-        pageSize: pageSize.value
-      }
+    const res = await socialApi.getPosts({
+      page: postPage.value,
+      pageSize: pageSize.value
     })
     posts.value = res.data.data?.records || []
     postTotal.value = res.data.data?.total || 0
-  } catch (e: any) { 
+  } catch (e: any) {
     console.error(e)
     ElMessage.error(e.response?.data?.message || '获取帖子失败')
   }
@@ -1265,7 +1253,7 @@ async function fetchPosts() {
 
 async function handlePinPost(postId: number, pinned: boolean) {
   try {
-    await axios.post(`/api/social/admin/posts/${postId}/pin`, null, { params: { pinned } })
+    await socialApi.pinPost(postId, pinned)
     ElMessage.success(pinned ? '帖子已置顶' : '帖子已取消置顶')
     fetchPosts()
   } catch (e: any) {
@@ -1275,7 +1263,7 @@ async function handlePinPost(postId: number, pinned: boolean) {
 
 async function handleEssencePost(postId: number, essence: boolean) {
   try {
-    await axios.post(`/api/social/admin/posts/${postId}/essence`, null, { params: { essence } })
+    await socialApi.essencePost(postId, essence)
     ElMessage.success(essence ? '帖子已设为精华' : '帖子已取消精华')
     fetchPosts()
   } catch (e: any) {
@@ -1286,7 +1274,7 @@ async function handleEssencePost(postId: number, essence: boolean) {
 async function handleDeletePost(postId: number) {
   try {
     await ElMessageBox.confirm('确定删除该帖子？', '确认', { type: 'warning' })
-    await axios.delete(`/api/social/posts/${postId}`)
+    await socialApi.deletePost(postId)
     ElMessage.success('帖子已删除')
     fetchPosts()
   } catch (e: any) {

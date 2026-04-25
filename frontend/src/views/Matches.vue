@@ -89,13 +89,13 @@ function getImageUrl(path: string) {
 
 const matchStatuses = [
   { value: 'PENDING', label: '未开始' },
-  { value: 'IN_PROGRESS', label: '进行中' },
+  { value: 'IN_PROGRESS', label: '直播中' },
   { value: 'FINISHED', label: '已结束' }
 ]
 
 const statusLabelMap: Record<string, string> = {
   PENDING: '未开始',
-  IN_PROGRESS: '进行中',
+  IN_PROGRESS: '直播中',
   FINISHED: '已结束',
   LIVE: '直播中'
 }

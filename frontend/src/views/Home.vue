@@ -332,7 +332,7 @@ function formatMatchTime(time: string) {
 
 const statusLabelMap: Record<string, string> = {
   PENDING: '未开始',
-  IN_PROGRESS: '进行中',
+  IN_PROGRESS: '直播中',
   FINISHED: '已结束',
   LIVE: '直播中'
 }

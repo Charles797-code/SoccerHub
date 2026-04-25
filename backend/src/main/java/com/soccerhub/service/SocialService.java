@@ -3,6 +3,7 @@ package com.soccerhub.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.soccerhub.dto.CircleDTO;
+import com.soccerhub.dto.CommentDTO;
 import com.soccerhub.dto.PostDTO;
 import com.soccerhub.dto.UserProfileDTO;
 import com.soccerhub.entity.*;
@@ -45,6 +46,9 @@ public class SocialService {
 
     @Autowired
     private CircleMemberMapper circleMemberMapper;
+
+    @Autowired
+    private PostCommentMapper postCommentMapper;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -202,6 +206,10 @@ public class SocialService {
 
     @Transactional
     public Post createPost(Long userId, String content, List<String> imageUrls, Long clubId, Long circleId) {
+        if (circleId != null && circleMemberMapper.isMember(circleId, userId) == 0) {
+            throw new RuntimeException("请先加入圈子后再发帖");
+        }
+
         Post post = new Post();
         post.setUserId(userId);
         post.setContent(content);
@@ -528,5 +536,76 @@ public class SocialService {
         QueryWrapper<Post> wrapper = new QueryWrapper<>();
         wrapper.eq("USER_ID", userId).eq("STATUS", "ACTIVE");
         return Math.toIntExact(postMapper.selectCount(wrapper));
+    }
+
+    public Page<CommentDTO> getPostComments(Long postId, int page, int pageSize) {
+        Page<PostComment> p = new Page<>(page, pageSize);
+        QueryWrapper<PostComment> wrapper = new QueryWrapper<>();
+        wrapper.eq("POST_ID", postId).eq("IS_DELETED", 0).orderByDesc("CREATED_AT");
+        Page<PostComment> result = postCommentMapper.selectPage(p, wrapper);
+
+        Page<CommentDTO> pageDto = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        List<CommentDTO> dtoList = result.getRecords().stream().map(c -> {
+            CommentDTO dto = new CommentDTO();
+            dto.setCommentId(c.getCommentId());
+            dto.setPostId(c.getPostId());
+            dto.setUserId(c.getUserId());
+            dto.setContent(c.getContent());
+            dto.setParentId(c.getParentId());
+            dto.setCreatedAt(c.getCreatedAt());
+            SysUser user = userMapper.selectById(c.getUserId());
+            if (user != null) {
+                dto.setUsername(user.getUsername());
+                dto.setUserNickname(user.getNickname());
+                dto.setUserAvatar(user.getAvatarUrl());
+            }
+            return dto;
+        }).collect(Collectors.toList());
+        pageDto.setRecords(dtoList);
+        return pageDto;
+    }
+
+    @Transactional
+    public CommentDTO addComment(Long postId, Long userId, String content, Long parentId) {
+        PostComment comment = new PostComment();
+        comment.setPostId(postId);
+        comment.setUserId(userId);
+        comment.setContent(content);
+        comment.setParentId(parentId);
+        comment.setIsDeleted(0);
+        comment.setCreatedAt(LocalDateTime.now());
+        postCommentMapper.insert(comment);
+        postMapper.updateCommentCount(postId, 1);
+
+        CommentDTO dto = new CommentDTO();
+        dto.setCommentId(comment.getCommentId());
+        dto.setPostId(postId);
+        dto.setUserId(userId);
+        dto.setContent(content);
+        dto.setParentId(parentId);
+        dto.setCreatedAt(comment.getCreatedAt());
+        SysUser user = userMapper.selectById(userId);
+        if (user != null) {
+            dto.setUsername(user.getUsername());
+            dto.setUserNickname(user.getNickname());
+            dto.setUserAvatar(user.getAvatarUrl());
+        }
+        return dto;
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId, Long userId, boolean isAdmin) {
+        PostComment comment = postCommentMapper.selectById(commentId);
+        if (comment == null) {
+            throw new RuntimeException("Comment not found");
+        }
+        if (!isAdmin && !comment.getUserId().equals(userId)) {
+            throw new RuntimeException("Not authorized to delete this comment");
+        }
+        comment.setIsDeleted(1);
+        comment.setUpdatedAt(LocalDateTime.now());
+        postCommentMapper.updateById(comment);
+        // Update post comment count
+        postMapper.updateCommentCount(comment.getPostId(), -1);
     }
 }

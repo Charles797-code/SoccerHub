@@ -264,10 +264,12 @@ const uploadHeaders = computed(() => ({
 }))
 
 onMounted(async () => {
-  await loadProfile()
+  const profileLoaded = await loadProfile()
   await loadClubs()
-  await loadMyPosts()
-  await loadFavoritePosts()
+  if (profileLoaded) {
+    await loadMyPosts()
+    await loadFavoritePosts()
+  }
 })
 
 async function loadProfile() {
@@ -280,9 +282,11 @@ async function loadProfile() {
       favoriteClubId: user.value.favoriteClubId
     }
     const profileRes = await api.get(`/social/user/${user.value.userId}`)
-    profile.value = profileRes.data
+    profile.value = profileRes.data.data
+    return true
   } catch (e) {
     console.error(e)
+    return false
   }
 }
 
@@ -319,6 +323,14 @@ async function saveProfile() {
     await api.put('/social/profile', editForm.value)
     ElMessage.success('保存成功')
     await loadProfile()
+    // Sync updated profile to auth store so the header nickname reflects the change immediately
+    if (authStore.user) {
+      authStore.user.nickname = user.value.nickname
+      authStore.user.bio = user.value.bio
+      authStore.user.avatarUrl = user.value.avatarUrl
+      authStore.user.favoriteClubId = user.value.favoriteClubId
+      localStorage.setItem('user', JSON.stringify(authStore.user))
+    }
   } catch (e: any) {
     ElMessage.error(e.response?.data?.message || '保存失败')
   } finally {
@@ -358,6 +370,10 @@ async function saveAvatar() {
     avatarLoading.value = true
     await authApi.updateProfile({ avatarUrl: tempAvatar.value })
     user.value.avatarUrl = tempAvatar.value
+    if (authStore.user) {
+      authStore.user.avatarUrl = tempAvatar.value
+      localStorage.setItem('user', JSON.stringify(authStore.user))
+    }
     showAvatarDialog.value = false
     tempAvatar.value = ''
     ElMessage.success('头像更新成功')

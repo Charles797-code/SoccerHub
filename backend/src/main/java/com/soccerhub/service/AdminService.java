@@ -6,6 +6,7 @@ import com.soccerhub.dto.DashboardStats;
 import com.soccerhub.entity.*;
 import com.soccerhub.mapper.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,8 @@ public class AdminService {
     private final SystemDictionaryMapper dictionaryMapper;
     private final LeagueStandingMapper standingMapper;
     private final NewsArticleMapper newsMapper;
+    private final CircleMapper circleMapper;
+    private final JdbcTemplate jdbcTemplate;
 
     public DashboardStats getDashboardStats() {
         DashboardStats stats = new DashboardStats();
@@ -185,7 +188,41 @@ public class AdminService {
     public Club createClub(Club club) {
         club.setCreatedAt(java.time.LocalDateTime.now());
         clubMapper.insert(club);
+
+        Circle circle = new Circle();
+        circle.setClubId(club.getClubId());
+        circle.setName(club.getShortName() != null ? club.getShortName() + "球迷圈" : club.getName() + "球迷圈");
+        circle.setDescription("欢迎加入" + (club.getShortName() != null ? club.getShortName() : club.getName()) + "球迷圈子讨论！");
+        circle.setMemberCount(0);
+        circle.setPostCount(0);
+        circle.setStatus("1");
+        circle.setCreatedAt(java.time.LocalDateTime.now());
+        circleMapper.insert(circle);
+
+        // Auto-create standings for the club's league
+        if (club.getLeague() != null && !club.getLeague().isEmpty()) {
+            LeagueStanding standing = new LeagueStanding();
+            standing.setLeague(club.getLeague());
+            standing.setSeason(getCurrentSeason());
+            standing.setClubId(club.getClubId());
+            standing.setPlayed(0);
+            standing.setWon(0);
+            standing.setDrawn(0);
+            standing.setLost(0);
+            standing.setGoalsFor(0);
+            standing.setGoalsAgainst(0);
+            standing.setGoalDiff(0);
+            standing.setPoints(0);
+            standing.setPosition(999);
+            standingMapper.insert(standing);
+        }
+
         return club;
+    }
+
+    private String getCurrentSeason() {
+        int year = java.time.LocalDate.now().getYear();
+        return year + "-" + (year + 1);
     }
 
     @Transactional
@@ -200,6 +237,25 @@ public class AdminService {
 
     @Transactional
     public void deleteClub(Long id) {
+        // 1. Delete circle member relationships first
+        jdbcTemplate.update("DELETE FROM CIRCLE_MEMBER WHERE CIRCLE_ID IN (SELECT CIRCLE_ID FROM CIRCLE WHERE CLUB_ID = ?)", id);
+        // 2. Delete circles associated with this club
+        jdbcTemplate.update("DELETE FROM CIRCLE WHERE CLUB_ID = ?", id);
+        // 3. Update users who have this club as favorite to remove reference
+        jdbcTemplate.update("UPDATE SYS_USER SET FAVORITE_CLUB_ID = NULL WHERE FAVORITE_CLUB_ID = ?", id);
+        // 4. Update users who manage this club to remove reference
+        jdbcTemplate.update("UPDATE SYS_USER SET MANAGED_CLUB_ID = NULL WHERE MANAGED_CLUB_ID = ?", id);
+        // 5. Delete user follows
+        jdbcTemplate.update("DELETE FROM USER_FOLLOW WHERE FOLLOWING_ID = ? OR FOLLOWER_ID = ?", id, id);
+        // 6. Update player club references (set to null)
+        jdbcTemplate.update("UPDATE PLAYER SET CLUB_ID = NULL WHERE CLUB_ID = ?", id);
+        // 7. Update coach club references (set to null)
+        jdbcTemplate.update("UPDATE COACH SET CLUB_ID = NULL WHERE CLUB_ID = ?", id);
+        // 8. Update news club references
+        jdbcTemplate.update("UPDATE NEWS_ARTICLE SET CLUB_ID = NULL WHERE CLUB_ID = ?", id);
+        // 9. Update standings
+        jdbcTemplate.update("DELETE FROM LEAGUE_STANDINGS WHERE CLUB_ID = ?", id);
+        // 10. Finally delete the club
         clubMapper.deleteById(id);
     }
 }
