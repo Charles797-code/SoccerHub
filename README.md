@@ -1,11 +1,11 @@
 # SoccerHub - 足球社区管理系统
 
-一个基于 Oracle 21c + Spring Boot 3.2 + Vue 3 构建的现代化足球社区管理平台，涵盖俱乐部管理、球员评分、实时赛程、聊天室、新闻资讯、社区帖子等核心功能。
+一个功能完备的现代化足球社区平台，基于 Oracle 21c + Spring Boot 3.2 + Vue 3 构建，涵盖俱乐部管理、球员评分、实时赛程、聊天室、新闻资讯、社区社交、AI智能助手等完整功能。
 
 ## 目录
 
 - [技术架构](#技术架构)
-- [功能概览](#功能概览)
+- [功能详解](#功能详解)
 - [项目结构](#项目结构)
 - [快速开始](#快速开始)
 - [部署指南](#部署指南)
@@ -34,75 +34,333 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 技术栈
+### 技术栈详情
 
-| 层级 | 技术 | 版本 |
+#### 前端
+| 技术 | 版本 | 说明 |
 |------|------|------|
-| 前端框架 | Vue 3 (Composition API) | 3.4+ |
-| 前端语言 | TypeScript | 5.x |
-| 构建工具 | Vite | 5.x |
-| UI组件库 | Element Plus | 2.7+ |
-| 状态管理 | Pinia | 2.1+ |
-| 后端框架 | Spring Boot | 3.2.x |
-| 后端语言 | Java | 21 |
-| ORM框架 | MyBatis-Plus | 3.5.x |
-| 数据库 | Oracle Database | 21c XE |
-| 缓存 | Redis | 7.x |
-| 安全 | Spring Security + JWT | 6.x |
-| API文档 | SpringDoc OpenAPI | 2.5.0 |
+| Vue 3 | 3.4+ | 前端框架（Composition API + script setup）|
+| TypeScript | 5.x | 类型安全 |
+| Vite | 5.x | 构建工具 |
+| Element Plus | 2.7+ | UI组件库 |
+| Pinia | 2.1+ | 状态管理 |
+| Vue Router | 4.3+ | 路由管理 |
+| Axios | 1.7+ | HTTP客户端 |
+| Sass | 1.77+ | CSS预处理器 |
+
+#### 后端
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| Spring Boot | 3.2.x | Web框架 |
+| Java | 21 | 运行环境（Virtual Threads）|
+| MyBatis-Plus | 3.5.x | ORM框架 |
+| Oracle JDBC | 23.x | 数据库驱动 |
+| Spring Security | 6.x | 安全框架 |
+| JWT (JJWT) | 0.12.5 | 令牌认证 |
+| Springdoc OpenAPI | 2.5.0 | API文档 |
+| Spring WebSocket | 6.x | 实时通信 |
+| Spring Data Redis | 3.x | 缓存 |
+| HikariCP | 5.x | 连接池 |
+
+#### 数据库与容器
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| Oracle Database | 21c XE | 关系型数据库 |
+| Redis | 7.x | 缓存（可选）|
+| Docker | 24+ | 容器化部署 |
 
 ---
 
-## 功能概览
+## 功能详解
 
-### 用户与权限
-- **多角色系统**：球迷(FAN)、俱乐部管理员(CLUB_ADMIN)、超级管理员(SUPER_ADMIN)
-- **JWT认证**：安全的令牌认证体系，支持注册、登录、个人信息管理
-- **关注系统**：用户可关注俱乐部（最多3个）
+### 一、用户与权限系统
 
-### 俱乐部管理
-- **五大联赛俱乐部**：英超、西甲、德甲、意甲、法甲共10支俱乐部
-- **俱乐部详情**：阵容、近期赛程、聊天室入口
-- **俱乐部关注**：关注后可进行评分、参与聊天室
+#### 1.1 多角色认证
+系统支持三种用户角色：
 
-### 球员管理
-- **球员信息**：姓名、位置、号码、国籍、年龄、身高、体重、身价、平均评分
-- **球员详情页**：完整展示球员个人信息
-- **球员评分榜**：按平均评分排名
+| 角色 | 代码 | 权限说明 |
+|------|------|----------|
+| 普通球迷 | FAN | 浏览、关注、评分、发帖、评论、参与聊天室 |
+| 俱乐部管理员 | CLUB_ADMIN | 上述权限 + 管理俱乐部阵容、管理聊天室、管理俱乐部新闻 |
+| 超级管理员 | SUPER_ADMIN | 全部权限 + 系统管理、用户管理、数据导入导出 |
 
-### 比赛与评分
-- **赛程管理**：比赛日程展示，按日期筛选
-- **比赛详情**：展示比赛信息、双方阵容
-- **球员评分**：每场比赛可对球员进行1-10分打分
-- **评分防刷**：24小时内同一目标不可重复评分
+#### 1.2 JWT认证体系
+- **注册登录**：支持用户名、邮箱注册，登录后获取JWT令牌
+- **令牌刷新**：支持Token刷新机制
+- **密码安全**：Bcrypt加密存储
+- **RBAC**：基于角色的访问控制
 
-### 教练管理
-- **教练信息**：姓名、国籍、所属俱乐部
-- **教练评分**：与球员评分机制一致
+#### 1.3 关注系统
+- 用户可关注其他用户（互相关注成为好友）
+- 用户可关注俱乐部（最多3个）
+- 关注后可进行评分、参与聊天室
 
-### 聊天室
-- **俱乐部聊天室**：基于WebSocket的实时聊天室
-- **消息管理**：俱乐部管理员可删除/折叠不当消息
+---
 
-### 新闻资讯
-- **新闻浏览**：用户可浏览新闻列表和详情
-- **新闻评论**：用户可对新闻发表评论
+### 二、俱乐部管理
 
-### 社区功能
-- **帖子发布**：用户可发布帖子
-- **帖子评论**：支持帖子的评论功能
-- **点赞收藏**：支持对帖子点赞和收藏
+#### 2.1 俱乐部列表
+- 展示五大联赛（英超、西甲、德甲、意甲、法甲）共10支俱乐部
+- 支持按联赛筛选
+- 显示俱乐部Logo、名称、主场城市
 
-### AI助手
-- **HubBot智能问答**：集成通义千问大模型，支持足球相关问答
+#### 2.2 俱乐部详情页
+- **基本信息**：俱乐部名称、简称、联赛、城市、国家、主场球场、成立日期、球场容量
+- **阵容列表**：展示球员名单（位置、号码、姓名）
+- **教练组**：主教练信息
+- **近期赛程**：即将进行的比赛
+- **聊天室入口**：进入俱乐部专属聊天室
+- **积分排名**：该俱乐部在联赛的排名
 
-### 联赛积分榜
-- **五大联赛积分榜**：展示各联赛的完整积分排名
+#### 2.3 俱乐部关注
+- 球迷可关注喜爱的俱乐部
+- 关注后可对俱乐部球员进行评分
+- 关注列表展示
 
-### 管理后台
-- **管理员仪表盘**：展示系统统计数据
-- **审计日志**：记录所有敏感操作
-- **系统字典管理**：可配置的系统参数
+---
+
+### 三、球员管理
+
+#### 3.1 球员信息
+完整展示球员档案：
+- **基本信息**：姓名（中英文）、头像、球衣号码、位置、国籍
+- **身体数据**：身高、体重、出生日期（年龄）
+- **竞技数据**：市场身价、当前状态（现役/退役/伤病/自由身）
+- **评分数据**：平均评分（根据用户评分计算）
+
+#### 3.2 球员列表
+- 分页展示所有球员
+- 支持按联赛筛选
+- 支持按位置筛选（门将/后卫/中场/前锋）
+- 支持按状态筛选
+- 支持关键词搜索（姓名）
+
+#### 3.3 球员详情页
+- 完整个人信息展示
+- 生涯数据统计
+- 评分历史
+
+#### 3.4 球员评分榜
+- 按平均评分降序排列
+- 支持按联赛筛选
+- 支持按位置筛选
+- 展示排名、球员信息、评分
+
+---
+
+### 四、教练管理
+
+#### 4.1 教练信息
+- 姓名、国籍、所属俱乐部
+- 是否主教练
+- 执教平均评分
+
+#### 4.2 教练列表与详情
+- 分页展示教练
+- 支持按俱乐部筛选
+- 教练详情页
+
+#### 4.3 教练评分
+- 与球员评分机制一致
+- 支持1-10分评分
+- 24小时防刷保护
+
+---
+
+### 五、比赛与评分系统
+
+#### 5.1 赛程管理
+- **今日赛事**：展示今天即将/正在进行的比赛
+- **直播比赛**：展示正在进行的比赛
+- **即将开始**：展示即将进行的比赛
+- **全部赛程**：支持按日期、按联赛、按俱乐部筛选
+
+#### 5.2 比赛详情
+- **基本信息**：主客队、比赛时间、联赛、场地
+- **比分信息**：实时比分（如比赛进行中）
+- **比赛状态**：未开始/进行中/已结束/已取消
+
+#### 5.3 球员评分
+- 每场比赛可对两队球员进行1-10分打分
+- 支持选择评分类型（进攻/防守/组织/关键表现等）
+- **评分防刷**：同一目标24小时内不可重复评分
+- **平均分**：实时计算并展示球员平均评分
+
+#### 5.4 比赛评论（弹幕）
+- 用户可在比赛页面发送评论
+- 实时显示最新评论
+- 支持删除自己的评论
+
+---
+
+### 六、聊天室系统
+
+#### 6.1 俱乐部聊天室
+- 每个俱乐部有专属聊天室
+- 基于WebSocket实现实时消息推送
+- 支持文字消息发送
+- 支持查看历史消息
+
+#### 6.2 消息管理
+- 俱乐部管理员可删除不当消息
+- 俱乐部管理员可折叠（屏蔽）消息
+- 超级管理员可管理所有聊天室消息
+
+#### 6.3 在线状态
+- 显示当前在线人数
+- 用户进入/离开提示
+
+---
+
+### 七、新闻资讯系统
+
+#### 7.1 新闻浏览
+- 新闻列表分页展示
+- 支持按俱乐部筛选新闻
+- 支持关键词搜索
+- 显示封面图、标题、摘要、发布时间、浏览量
+
+#### 7.2 新闻详情
+- 完整新闻内容展示
+- 富文本支持
+- 自动增加浏览量
+
+#### 7.3 新闻评论
+- 用户可对新闻发表评论
+- 评论分页展示
+- 支持删除评论
+
+#### 7.4 新闻爬取
+- 集成懂球帝API自动爬取足球新闻
+- 备用：新浪体育爬虫
+- 爬取后自动入库
+
+#### 7.5 新闻管理（管理员）
+- 创建新闻
+- 编辑新闻
+- 删除新闻
+- 设置新闻封面、分类
+
+---
+
+### 八、社区社交系统
+
+#### 8.1 用户主页
+- 展示用户昵称、头像、个人简介
+- 关注的俱乐部列表
+- 粉丝/关注数量
+- 用户发布的帖子列表
+
+#### 8.2 帖子功能
+- 发布帖子（文字内容）
+- 查看帖子列表
+- 帖子详情页
+
+#### 8.3 帖子互动
+- **点赞**：对帖子点赞/取消点赞
+- **收藏**：收藏帖子
+- **评论**：对帖子进行评论
+- 显示点赞数、评论数、收藏数
+
+#### 8.4 用户互关
+- 关注其他用户
+- 相互关注成为好友
+- 查看粉丝列表
+- 查看关注列表
+
+#### 8.5 球迷圈子
+- 每个俱乐部有专属球迷圈子
+- 官方主社区
+- 圈子成员管理
+
+---
+
+### 九、AI智能助手（HubBot）
+
+#### 9.1 智能问答
+- 集成通义千问（阿里云）大模型
+- 支持足球相关知识问答
+- 支持闲聊模式
+
+#### 9.2 实时响应
+- 基于WebSocket的流式输出
+- 打字机效果展示
+
+---
+
+### 十、联赛积分榜
+
+#### 10.1 五大联赛积分榜
+- 英超、西甲、德甲、意甲、法甲
+- 显示：排名、俱乐部、场次、胜/平/负、进失球数、积分
+- 自动更新（比赛结束后通过存储过程更新）
+
+#### 10.2 数据榜单
+- **射手榜**：按进球数排名
+- **助攻榜**：按助攻数排名
+- **黄牌榜**：按黄牌数排名
+- 支持按联赛、赛季筛选
+
+---
+
+### 十一、转会管理
+
+#### 11.1 球员转会
+- 俱乐部管理员可为旗下球员发起转会
+- 转会类型：永久转会、租借
+- 转会费用记录
+- 赛季记录
+
+#### 11.2 转会历史
+- 完整转会记录日志
+- 可查询球员转会历史
+
+---
+
+### 十二、管理后台
+
+#### 12.1 管理员仪表盘
+- 系统统计数据概览
+- 用户总数、俱乐部总数、球员总数
+- 今日比赛数、在线用户数
+
+#### 12.2 用户管理
+- 用户列表（分页、筛选）
+- 修改用户角色（FAN/CLUB_ADMIN/SUPER_ADMIN）
+- 修改用户状态（ACTIVE/BANNED）
+- 分配俱乐部管理员管理的俱乐部
+- 查看用户详情
+
+#### 12.3 审计日志
+- 记录所有敏感操作
+- 按模块、操作用户筛选
+- 操作类型：用户管理、评分、发帖、聊天等
+
+#### 12.4 系统字典
+- 系统参数配置
+- 位置、球员状态、联赛等枚举值管理
+
+#### 12.5 数据导入导出
+- **导出Excel**：支持导出用户、球员、比赛等数据
+- **导出CSV**：支持CSV格式导出
+- **导入球员**：从Excel文件批量导入球员数据
+- **导入比赛**：从Excel文件批量导入比赛数据
+
+---
+
+### 十三、文件上传
+
+#### 13.1 头像上传
+- 用户可上传/修改头像
+- 支持图片格式：jpg、png、gif
+- 自动压缩和裁剪
+
+#### 13.2 新闻图片
+- 新闻封面图上传
+- 新闻内容图片上传
+
+#### 13.3 俱乐部Logo
+- 管理员可上传俱乐部Logo
 
 ---
 
@@ -113,77 +371,195 @@ soccer_community/
 ├── backend/                              # Spring Boot 后端项目
 │   ├── src/main/java/com/soccerhub/
 │   │   ├── config/                       # 配置类
-│   │   │   ├── SecurityConfig.java       # Spring Security配置
-│   │   │   ├── WebMvcConfig.java         # Web MVC配置
-│   │   │   ├── WebSocketConfig.java      # WebSocket配置
+│   │   │   ├── SecurityConfig.java       # Spring Security + JWT配置
+│   │   │   ├── WebMvcConfig.java         # Web MVC配置（CORS、静态资源）
+│   │   │   ├── WebSocketConfig.java      # WebSocket配置（STOMP）
 │   │   │   ├── RedisConfig.java          # Redis缓存配置
-│   │   │   ├── SpaFallbackController.java # SPA路由回退
-│   │   │   └── GlobalExceptionHandler.java # 全局异常处理
-│   │   ├── controller/                   # REST控制器
-│   │   │   ├── AuthController.java       # 认证接口
-│   │   │   ├── ClubController.java       # 俱乐部接口
-│   │   │   ├── PlayerController.java     # 球员接口
-│   │   │   ├── MatchController.java      # 比赛接口
-│   │   │   ├── ChatController.java       # 聊天室接口
-│   │   │   ├── NewsController.java       # 新闻接口
-│   │   │   ├── SocialController.java     # 社区接口
-│   │   │   ├── AdminController.java      # 管理后台接口
-│   │   │   ├── AiChatController.java     # AI助手接口
-│   │   │   └── ...
-│   │   ├── service/                      # 业务逻辑层
+│   │   │   ├── MyBatisPlusConfig.java    # MyBatis-Plus配置
+│   │   │   ├── SpaFallbackController.java # SPA路由回退控制器
+│   │   │   └── GlobalExceptionHandler.java # 全局异常处理器
+│   │   ├── controller/                   # REST API控制器
+│   │   │   ├── AuthController.java       # 认证：登录、注册、刷新Token、当前用户
+│   │   │   ├── ClubController.java       # 俱乐部：列表、详情、搜索
+│   │   │   ├── PlayerController.java     # 球员：列表、详情、评分榜、统计
+│   │   │   ├── CoachController.java      # 教练：列表、详情、评分榜
+│   │   │   ├── MatchController.java      # 比赛：列表、今日、直播、赛程管理
+│   │   │   ├── MatchPlayerRatingController.java # 比赛球员评分
+│   │   │   ├── MatchCommentController.java # 比赛评论（弹幕）
+│   │   │   ├── ChatController.java       # 聊天室：消息、发送、WebSocket
+│   │   │   ├── NewsController.java       # 新闻：列表、详情、爬取、评论
+│   │   │   ├── SocialController.java     # 社区：用户、关注、帖子、点赞、收藏
+│   │   │   ├── FollowController.java      # 俱乐部关注
+│   │   │   ├── StandingsController.java  # 积分榜、射手榜、助攻榜
+│   │   │   ├── RatingController.java     # 评分：提交、查询、防刷
+│   │   │   ├── AdminController.java      # 超级管理员：仪表盘、用户、字典、审计
+│   │   │   ├── ClubAdminController.java  # 俱乐部管理员：阵容、教练、转户管理
+│   │   │   ├── AnalyticsController.java  # 数据分析：导入导出Excel/CSV
+│   │   │   ├── AiChatController.java     # AI助手：通义千问对话
+│   │   │   └── FileUploadController.java # 文件上传：头像、图片
+│   │   ├── service/                      # 业务逻辑层（Service）
+│   │   │   ├── AuthService.java          # 认证业务
+│   │   │   ├── ClubService.java          # 俱乐部业务
+│   │   │   ├── PlayerService.java        # 球员业务
+│   │   │   ├── CoachService.java         # 教练业务
+│   │   │   ├── MatchService.java         # 比赛业务
+│   │   │   ├── MatchPlayerRatingService.java # 比赛评分业务
+│   │   │   ├── MatchCommentService.java  # 比赛评论业务
+│   │   │   ├── ChatService.java          # 聊天室业务
+│   │   │   ├── NewsService.java          # 新闻业务
+│   │   │   ├── NewsScraperService.java   # 新闻爬取业务
+│   │   │   ├── NewsCommentService.java  # 新闻评论业务
+│   │   │   ├── SocialService.java        # 社区业务
+│   │   │   ├── FollowService.java        # 关注业务
+│   │   │   ├── RatingService.java        # 评分业务
+│   │   │   ├── AdminService.java         # 管理员业务
+│   │   │   ├── ClubAdminService.java     # 俱乐部管理员业务
+│   │   │   ├── AnalyticsService.java     # 数据分析业务
+│   │   │   ├── AiChatService.java        # AI聊天业务
+│   │   │   └── FileUploadService.java    # 文件上传业务
 │   │   ├── mapper/                       # MyBatis Mapper接口
-│   │   ├── entity/                       # 数据库实体
-│   │   ├── dto/                          # 数据传输对象
-│   │   ├── security/                     # JWT安全组件
+│   │   │   ├── SysUserMapper.java        # 用户Mapper
+│   │   │   ├── ClubMapper.java           # 俱乐部Mapper
+│   │   │   ├── PlayerMapper.java         # 球员Mapper
+│   │   │   ├── CoachMapper.java          # 教练Mapper
+│   │   │   ├── MatchScheduleMapper.java  # 赛程Mapper
+│   │   │   ├── MatchPlayerRatingMapper.java # 评分Mapper
+│   │   │   ├── MatchCommentMapper.java   # 评论Mapper
+│   │   │   ├── ClubChatMessageMapper.java # 聊天室消息Mapper
+│   │   │   ├── NewsArticleMapper.java    # 新闻Mapper
+│   │   │   ├── NewsCommentMapper.java    # 新闻评论Mapper
+│   │   │   ├── PostMapper.java           # 帖子Mapper
+│   │   │   ├── PostCommentMapper.java    # 帖子评论Mapper
+│   │   │   ├── PostLikeMapper.java       # 帖子点赞Mapper
+│   │   │   ├── PostFavoriteMapper.java   # 帖子收藏Mapper
+│   │   │   ├── UserFollowMapper.java     # 用户关注Mapper
+│   │   │   ├── UserClubFollowMapper.java # 俱乐部关注Mapper
+│   │   │   ├── CircleMapper.java         # 球迷圈子Mapper
+│   │   │   ├── CircleMemberMapper.java   # 圈子成员Mapper
+│   │   │   ├── LeagueStandingMapper.java # 积分榜Mapper
+│   │   │   ├── TransferHistoryLogMapper.java # 转会记录Mapper
+│   │   │   ├── AuditLogMapper.java       # 审计日志Mapper
+│   │   │   └── SystemDictionaryMapper.java # 字典Mapper
+│   │   ├── entity/                       # 数据库实体（Entity）
+│   │   │   ├── SysUser.java             # 用户实体
+│   │   │   ├── Club.java                # 俱乐部实体
+│   │   │   ├── Player.java              # 球员实体
+│   │   │   ├── Coach.java               # 教练实体
+│   │   │   ├── MatchSchedule.java       # 赛程实体
+│   │   │   ├── MatchPlayerRating.java   # 球员评分实体
+│   │   │   ├── MatchComment.java        # 比赛评论实体
+│   │   │   ├── ClubChatMessage.java     # 聊天室消息实体
+│   │   │   ├── NewsArticle.java         # 新闻实体
+│   │   │   ├── NewsComment.java         # 新闻评论实体
+│   │   │   ├── Post.java                # 帖子实体
+│   │   │   ├── PostComment.java         # 帖子评论实体
+│   │   │   ├── PostLike.java            # 点赞实体
+│   │   │   ├── PostFavorite.java        # 收藏实体
+│   │   │   ├── UserFollow.java          # 用户关注实体
+│   │   │   ├── UserClubFollow.java      # 俱乐部关注实体
+│   │   │   ├── Circle.java              # 球迷圈子实体
+│   │   │   ├── CircleMember.java        # 圈子成员实体
+│   │   │   ├── LeagueStanding.java      # 积分榜实体
+│   │   │   ├── TransferHistoryLog.java  # 转会记录实体
+│   │   │   ├── AuditLog.java            # 审计日志实体
+│   │   │   ├── SystemDictionary.java     # 字典实体
+│   │   │   └── ...
+│   │   ├── dto/                          # 数据传输对象（DTO）
+│   │   │   ├── ApiResponse.java         # 统一API响应
+│   │   │   ├── PageResponse.java        # 分页响应
+│   │   │   ├── LoginRequest.java        # 登录请求
+│   │   │   ├── LoginResponse.java       # 登录响应
+│   │   │   ├── RegisterRequest.java     # 注册请求
+│   │   │   ├── RatingRequest.java       # 评分请求
+│   │   │   ├── TransferRequest.java     # 转会请求
+│   │   │   ├── MatchUpsertRequest.java  # 赛程Upsert请求
+│   │   │   ├── UserProfileDTO.java      # 用户资料DTO
+│   │   │   ├── PlayerRanking.java       # 球员排名DTO
+│   │   │   ├── PlayerStatsRanking.java  # 球员数据排名DTO
+│   │   │   ├── CircleDTO.java           # 球迷圈子DTO
+│   │   │   ├── PostDTO.java             # 帖子DTO
+│   │   │   ├── CommentDTO.java          # 评论DTO
+│   │   │   ├── ChatMessageRequest.java  # 聊天消息请求
+│   │   │   ├── ChatMessageVO.java       # 聊天消息VO
+│   │   │   ├── DashboardStats.java      # 仪表盘统计
+│   │   │   ├── AnalyticsStats.java      # 分析统计
+│   │   │   └── UpdateProfileRequest.java # 更新资料请求
+│   │   ├── security/                     # 安全相关组件
+│   │   │   ├── JwtTokenProvider.java    # JWT令牌提供者
+│   │   │   ├── JwtAuthenticationFilter.java # JWT认证过滤器
+│   │   │   └── CustomUserDetailsService.java # 用户详情服务
 │   │   └── SoccerHubApplication.java    # 启动类
 │   ├── src/main/resources/
-│   │   ├── mapper/                       # MyBatis XML映射
+│   │   ├── mapper/                       # MyBatis XML映射文件
+│   │   │   ├── SysUserMapper.xml
+│   │   │   ├── ClubMapper.xml
+│   │   │   └── PlayerMapper.xml
 │   │   ├── static/                       # 静态资源（前端打包文件）
-│   │   └── application.yml               # 应用配置
-│   └── pom.xml                           # Maven依赖
+│   │   │   ├── index.html               # SPA入口
+│   │   │   ├── assets/                  # 打包后的JS/CSS
+│   │   │   └── uploads/                 # 上传的文件
+│   │   └── application.yml               # 应用配置文件
+│   └── pom.xml                           # Maven依赖配置
 │
 ├── frontend/                             # Vue 3 前端项目
 │   ├── src/
 │   │   ├── api/                          # API请求封装
+│   │   │   └── index.ts                 # Axios实例和拦截器
 │   │   ├── components/                   # 公共组件
-│   │   │   ├── AppButton.vue            # 按钮组件
-│   │   │   ├── Chat.vue                 # 聊天室组件
-│   │   │   ├── FollowButton.vue         # 关注按钮
-│   │   │   ├── HubBot.vue               # AI助手组件
-│   │   │   └── ImageUpload.vue          # 图片上传组件
+│   │   │   ├── AppButton.vue           # 自定义按钮组件
+│   │   │   ├── Chat.vue                # 聊天室组件（WebSocket）
+│   │   │   ├── FollowButton.vue        # 关注按钮组件
+│   │   │   ├── HubBot.vue              # AI助手组件
+│   │   │   └── ImageUpload.vue         # 图片上传组件
 │   │   ├── views/                       # 页面视图
-│   │   │   ├── Home.vue                 # 首页
-│   │   │   ├── Clubs.vue                # 俱乐部列表
-│   │   │   ├── ClubDetail.vue           # 俱乐部详情
-│   │   │   ├── Players.vue              # 球员列表
-│   │   │   ├── PlayerDetail.vue         # 球员详情
-│   │   │   ├── Matches.vue              # 赛程页面
-│   │   │   ├── MatchDetail.vue          # 比赛详情
-│   │   │   ├── Standings.vue            # 积分榜
-│   │   │   ├── Rankings.vue             # 球员评分榜
-│   │   │   ├── News.vue                 # 新闻列表
-│   │   │   ├── NewsDetail.vue           # 新闻详情
-│   │   │   ├── Community.vue            # 社区页面
-│   │   │   ├── Chat.vue                 # 聊天室页面
-│   │   │   ├── Profile.vue              # 个人中心
-│   │   │   ├── Login.vue                # 登录页
-│   │   │   ├── Register.vue             # 注册页
-│   │   │   ├── Admin.vue                # 管理后台
-│   │   │   └── ClubAdmin.vue            # 俱乐部管理
-│   │   ├── stores/                       # Pinia状态管理
-│   │   ├── router/                       # Vue Router配置
-│   │   └── styles/                       # 样式文件
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.ts
+│   │   │   ├── Home.vue                # 首页
+│   │   │   ├── Login.vue               # 登录页
+│   │   │   ├── Register.vue            # 注册页
+│   │   │   ├── Clubs.vue               # 俱乐部列表页
+│   │   │   ├── ClubDetail.vue          # 俱乐部详情页
+│   │   │   ├── Players.vue             # 球员列表页
+│   │   │   ├── PlayerDetail.vue        # 球员详情页
+│   │   │   ├── Rankings.vue            # 球员评分榜
+│   │   │   ├── Matches.vue             # 赛程页面
+│   │   │   ├── MatchDetail.vue         # 比赛详情页
+│   │   │   ├── Standings.vue           # 积分榜页面
+│   │   │   ├── News.vue                # 新闻列表页
+│   │   │   ├── NewsDetail.vue          # 新闻详情页
+│   │   │   ├── Community.vue           # 社区页面（帖子、评论）
+│   │   │   ├── Chat.vue                # 聊天室页面
+│   │   │   ├── Profile.vue             # 个人中心
+│   │   │   ├── UserDetail.vue          # 用户详情页
+│   │   │   ├── Admin.vue               # 超级管理后台
+│   │   │   ├── ClubAdmin.vue           # 俱乐部管理后台
+│   │   │   └── Layout.vue              # 布局组件
+│   │   ├── stores/                      # Pinia状态管理
+│   │   │   ├── auth.ts                 # 认证状态（用户信息、Token）
+│   │   │   └── app.ts                  # 应用状态
+│   │   ├── router/                      # Vue Router配置
+│   │   │   └── index.ts                # 路由定义和守卫
+│   │   ├── styles/                      # 样式文件
+│   │   │   ├── main.scss               # 全局样式
+│   │   │   ├── _tokens.scss            # 设计令牌
+│   │   │   └── _components.scss        # 组件样式
+│   │   ├── App.vue                      # 根组件
+│   │   └── main.ts                      # 入口文件
+│   ├── index.html                        # HTML入口
+│   ├── package.json                      # NPM依赖
+│   └── vite.config.ts                    # Vite配置
 │
 ├── database/                             # 数据库脚本
 │   └── init/
-│       ├── 00_create_user.sql           # 创建数据库用户
-│       ├── 01_schema.sql                # 建表+初始数据
-│       └── ...                          # 其他增量脚本
+│       ├── 00_create_user.sql           # 创建SOCCERHUB用户
+│       ├── 01_schema.sql                # 完整建表+存储过程+触发器+初始数据
+│       ├── social_tables.sql            # 社区功能表（帖子、评论、点赞、收藏）
+│       ├── post_comment_table.sql       # 帖子评论表
+│       ├── circle_tables.sql            # 球迷圈子表
+│       ├── update_player_stats*.sql     # 球员统计更新脚本
+│       ├── add_match_event.sql          # 比赛事件表
+│       ├── add_standings_triggers.sql   # 积分榜触发器
+│       └── ...
 │
-├── docker-compose.yml                    # Docker编排
+├── docker-compose.yml                    # Docker编排（Oracle数据库）
 └── README.md
 ```
 
@@ -201,26 +577,38 @@ soccer_community/
 | Oracle Database | 21c XE | 数据库 |
 | Docker | 24+ | 容器化部署 |
 
-### 1. 启动数据库
+### 步骤1：启动Oracle数据库
 
 ```bash
+# 使用Docker启动Oracle 21c
 docker compose up -d oracle21
+
+# 等待数据库启动完成（约3-5分钟）
+docker logs soccer_oracle21 --tail 20
+# 看到 "DATABASE IS READY TO USE!" 表示启动完成
 ```
 
-### 2. 初始化数据库
+### 步骤2：初始化数据库
 
 ```bash
+# 方式A：使用sqlplus
 sqlplus soccerhub/soccerhub2026@localhost:1521/XEPDB1 @database/init/01_schema.sql
+
+# 方式B：使用Docker exec
+docker exec -it soccer_oracle21 bash -c "sqlplus soccerhub/soccerhub2026@localhost:1521/XEPDB1 @/path/to/01_schema.sql"
 ```
 
-### 3. 启动后端
+### 步骤3：启动后端
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-### 4. 启动前端
+后端启动成功后，API地址：`http://localhost:8080/api`
+Swagger文档：`http://localhost:8080/api/swagger-ui.html`
+
+### 步骤4：启动前端
 
 ```bash
 cd frontend
@@ -244,11 +632,14 @@ cd SoccerHub
 # 启动Oracle数据库
 docker compose up -d oracle21
 
+# 等待数据库就绪
+sleep 180
+
 # 初始化数据库
 sqlplus soccerhub/soccerhub2026@localhost:1521/XEPDB1 @database/init/01_schema.sql
 
 # 启动后端
-cd backend && mvn spring-boot:run
+cd backend && mvn spring-boot:run &
 
 # 启动前端（新窗口）
 cd frontend && npm install && npm run dev
@@ -271,29 +662,37 @@ cd frontend
 npm run build
 ```
 
-前端构建产物在 `dist/` 目录，部署到nginx等Web服务器。
-
-#### Nginx配置示例
+#### Nginx配置
 
 ```nginx
 server {
     listen 80;
     server_name your-domain.com;
 
+    # 前端静态资源
     location / {
         root /path/to/frontend/dist;
         try_files $uri $uri/ /index.html;
     }
 
+    # API反向代理
     location /api/ {
         proxy_pass http://127.0.0.1:8080/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
     }
 
+    # WebSocket代理
     location /ws/ {
         proxy_pass http://127.0.0.1:8080/ws/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+    }
+
+    # 上传文件
+    location /uploads/ {
+        alias /path/to/uploads/;
     }
 }
 ```
@@ -302,7 +701,7 @@ server {
 
 ## 数据库说明
 
-### 主要数据表
+### 核心数据表
 
 | 表名 | 说明 |
 |------|------|
@@ -312,24 +711,39 @@ server {
 | COACH | 教练表 |
 | MATCH_SCHEDULE | 赛程表 |
 | MATCH_PLAYER_RATING | 球员评分表 |
-| CLUB_CHAT_MESSAGE | 聊天室消息表 |
+| MATCH_COMMENT | 比赛评论表 |
+| CLUB_CHAT_MESSAGE | 俱乐部聊天室消息表 |
 | NEWS_ARTICLE | 新闻表 |
 | NEWS_COMMENT | 新闻评论表 |
 | POST | 帖子表 |
 | POST_COMMENT | 帖子评论表 |
+| POST_LIKE | 帖子点赞表 |
+| POST_FAVORITE | 帖子收藏表 |
+| USER_FOLLOW | 用户关注表 |
+| USER_CLUB_FOLLOW | 用户俱乐部关注表 |
+| CIRCLE | 球迷圈子表 |
+| CIRCLE_MEMBER | 圈子成员表 |
 | LEAGUE_STANDING | 联赛积分表 |
-| USER_CLUB_FOLLOW | 用户关注俱乐部表 |
+| PLAYER_SEASON_STATS | 球员赛季数据表 |
+| TRANSFER_HISTORY_LOG | 转会记录表 |
 | AUDIT_LOG | 审计日志表 |
+| SYSTEM_DICTIONARY | 系统字典表 |
 
 ### 存储过程
 
 | 过程名 | 功能 |
 |--------|------|
-| osp_Submit_User_Rating | 评分提交（含防刷保护） |
-| osp_Upsert_Match_Schedule | 赛程UPSERT |
-| osp_Transfer_Player | 球员转会 |
-| osp_Moderate_Message | 消息审核 |
-| osp_Batch_Update_Standings | 积分榜批量更新 |
+| osp_Submit_User_Rating | 评分提交（含24小时防刷保护）|
+| osp_Upsert_Match_Schedule | 赛程Upsert（插入或更新）|
+| osp_Transfer_Player | 球员转会（含权限校验）|
+| osp_Moderate_Message | 消息审核（删除/折叠）|
+| osp_Batch_Update_Standings | 批量更新联赛积分榜 |
+
+### 触发器
+
+- 评分提交后自动更新球员/教练平均分
+- 比赛结束后自动更新积分榜
+- 进球/助攻后自动更新球员赛季统计
 
 ---
 
@@ -351,54 +765,199 @@ spring:
     port: 6379
 
 jwt:
-  secret: (内置密钥)
-  expiration: 86400000
+  secret: SoccerHub2024SecretKeyForJWTTokenGeneration
+  expiration: 86400000  # 24小时
 
 upload:
   path: uploads
+
+ai:
+  qwen:
+    api-key: your-api-key  # 通义千问API Key
+```
+
+### 前端环境变量
+
+```bash
+# .env.production
+VITE_API_BASE_URL=/api
 ```
 
 ---
 
 ## 演示账号
 
-| 用户名 | 密码 | 角色 |
-|--------|------|------|
-| admin | admin123 | SUPER_ADMIN |
-| realmadrid_admin | admin123 | CLUB_ADMIN |
-| fan_lionel | admin123 | FAN |
+| 用户名 | 密码 | 角色 | 说明 |
+|--------|------|------|------|
+| admin | admin123 | SUPER_ADMIN | 超级管理员，拥有所有权限 |
+| realmadrid_admin | admin123 | CLUB_ADMIN | 皇家马德里俱乐部管理员 |
+| fan_lionel | admin123 | FAN | 普通球迷用户 |
+| mancity_admin | admin123 | CLUB_ADMIN | 曼城俱乐部管理员 |
+| bayern_admin | admin123 | CLUB_ADMIN | 拜仁俱乐部管理员 |
 
 ---
 
 ## API 文档
 
-启动后端后，访问 Swagger UI：
+启动后端后，访问完整API文档：
 
 ```
 http://localhost:8080/api/swagger-ui.html
 ```
 
-### 主要API端点
+### 认证模块
 
-| 模块 | 方法 | 端点 | 说明 |
-|------|------|------|------|
-| 认证 | POST | /api/auth/login | 用户登录 |
-| 认证 | POST | /api/auth/register | 用户注册 |
-| 俱乐部 | GET | /api/clubs | 俱乐部列表 |
-| 俱乐部 | GET | /api/clubs/{id} | 俱乐部详情 |
-| 球员 | GET | /api/players | 球员列表 |
-| 球员 | GET | /api/players/rankings | 球员评分榜 |
-| 球员 | GET | /api/players/{id} | 球员详情 |
-| 比赛 | GET | /api/matches/today | 今日赛事 |
-| 比赛 | GET | /api/matches/{id} | 比赛详情 |
-| 评分 | POST | /api/ratings | 提交评分 |
-| 聊天室 | GET | /api/chat/{clubId}/messages | 聊天记录 |
-| 聊天室 | WS | /ws/topic/club/{clubId} | WebSocket聊天 |
-| 关注 | POST | /api/follow/{clubId} | 关注俱乐部 |
-| 积分榜 | GET | /api/standings/{league} | 联赛积分榜 |
-| 新闻 | GET | /api/news | 新闻列表 |
-| 社区 | GET | /api/social/posts | 帖子列表 |
-| AI助手 | POST | /api/ai/chat | AI对话 |
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | /api/auth/login | 用户登录 |
+| POST | /api/auth/register | 用户注册 |
+| POST | /api/auth/refresh | 刷新Token |
+| GET | /api/auth/user/me | 获取当前用户信息 |
+
+### 俱乐部模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/clubs | 俱乐部列表 |
+| GET | /api/clubs/{id} | 俱乐部详情 |
+
+### 球员模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/players | 球员列表 |
+| GET | /api/players/{id} | 球员详情 |
+| GET | /api/players/rankings | 球员评分榜 |
+| GET | /api/players/club/{clubId} | 俱乐部球员列表 |
+
+### 教练模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/coaches | 教练列表 |
+| GET | /api/coaches/{id} | 教练详情 |
+| GET | /api/coaches/rankings | 教练评分榜 |
+
+### 比赛模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/matches | 比赛列表 |
+| GET | /api/matches/{id} | 比赛详情 |
+| GET | /api/matches/today | 今日赛事 |
+| GET | /api/matches/live | 直播比赛 |
+| GET | /api/matches/upcoming | 即将开始的比赛 |
+| POST | /api/matches/upsert | 创建/更新赛程 |
+| DELETE | /api/matches/{id} | 删除赛程 |
+
+### 评分模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | /api/ratings | 提交评分 |
+| GET | /api/ratings/target/{type}/{id} | 获取评分列表 |
+| GET | /api/ratings/target/{type}/{id}/average | 获取平均分 |
+
+### 聊天室模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/chat/{clubId}/messages | 获取聊天记录 |
+| POST | /api/chat/{clubId}/messages | 发送消息 |
+| WS | /ws/topic/club/{clubId} | WebSocket订阅 |
+
+### 新闻模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/news | 新闻列表 |
+| GET | /api/news/{id} | 新闻详情 |
+| POST | /api/news/scrape | 爬取新闻 |
+| POST | /api/news | 创建新闻 |
+| PUT | /api/news/{id} | 更新新闻 |
+| DELETE | /api/news/{id} | 删除新闻 |
+| GET | /api/news/{id}/comments | 获取新闻评论 |
+| POST | /api/news/{id}/comments | 添加新闻评论 |
+
+### 社区模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/social/user/{userId} | 获取用户资料 |
+| PUT | /api/social/profile | 更新个人资料 |
+| POST | /api/social/follow/{userId} | 关注用户 |
+| GET | /api/social/followers/{userId} | 获取粉丝列表 |
+| GET | /api/social/following/{userId} | 获取关注列表 |
+| GET | /api/social/circles | 获取所有球迷圈子 |
+| GET | /api/social/posts | 获取帖子列表 |
+| POST | /api/social/posts | 发布帖子 |
+| GET | /api/social/posts/{id} | 帖子详情 |
+| POST | /api/social/posts/{id}/like | 点赞帖子 |
+| DELETE | /api/social/posts/{id}/like | 取消点赞 |
+| POST | /api/social/posts/{id}/favorite | 收藏帖子 |
+| DELETE | /api/social/posts/{id}/favorite | 取消收藏 |
+| GET | /api/social/posts/{id}/comments | 获取帖子评论 |
+| POST | /api/social/posts/{id}/comments | 添加评论 |
+
+### 关注模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | /api/follows | 关注俱乐部 |
+| DELETE | /api/follows/{clubId} | 取消关注 |
+| GET | /api/follows/my-follows | 获取我关注的俱乐部 |
+| GET | /api/follows/{clubId}/followers | 获取俱乐部粉丝数 |
+
+### 积分榜模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/standings | 联赛积分榜 |
+| POST | /api/standings | 创建/更新积分 |
+| GET | /api/standings/scorers | 射手榜 |
+| GET | /api/standings/assists | 助攻榜 |
+| GET | /api/standings/yellow-cards | 黄牌榜 |
+
+### 管理后台（SUPER_ADMIN）
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/admin/dashboard/stats | 仪表盘统计 |
+| GET | /api/admin/users | 用户列表 |
+| PUT | /api/admin/users/{id}/role | 修改用户角色 |
+| PUT | /api/admin/users/{id}/status | 修改用户状态 |
+| GET | /api/admin/audit-logs | 审计日志 |
+| GET | /api/admin/dictionary | 系统字典 |
+| PUT | /api/admin/dictionary/{id} | 更新字典 |
+| GET | /api/analytics/stats | 数据分析统计 |
+| GET | /api/analytics/export/{type} | 导出数据 |
+| POST | /api/analytics/import/players | 导入球员 |
+| POST | /api/analytics/import/matches | 导入比赛 |
+
+### 俱乐部管理员（CLUB_ADMIN）
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/club-admin/club | 我的俱乐部信息 |
+| PUT | /api/club-admin/club | 更新俱乐部信息 |
+| GET | /api/club-admin/players | 我的球员列表 |
+| POST | /api/club-admin/players | 添加球员 |
+| PUT | /api/club-admin/players/{id} | 更新球员 |
+| DELETE | /api/club-admin/players/{id} | 删除球员 |
+| POST | /api/club-admin/players/{id}/transfer | 球员转会 |
+
+### AI助手
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | /api/ai/chat | 发送对话 |
+
+### 文件上传
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | /api/upload/image | 上传图片 |
+| POST | /api/upload/avatar | 上传头像 |
 
 ---
 
