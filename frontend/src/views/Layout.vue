@@ -126,6 +126,7 @@
           </el-icon>
           <span>俱乐部管理</span>
         </div>
+        <div class="sidebar-bg"></div>
       </aside>
 
       <!-- Main Content -->
@@ -185,26 +186,28 @@ function handleCommand(command: string) {
 
 <style scoped lang="scss">
 .layout {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .top-nav {
-  height: 56px;
-  background: #1a56db;
+  height: 60px;
+  background: var(--el-bg-color-overlay);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  gap: 20px;
+  padding: 0 24px;
+  gap: 24px;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--el-border-color-light);
 
   .nav-brand {
     font-size: 20px;
     font-weight: 700;
-    color: #ffffff;
     white-space: nowrap;
 
     .logo-link {
@@ -214,26 +217,22 @@ function handleCommand(command: string) {
     }
 
     .logo-text {
-      font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
       font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.5px;
-      color: #ffffff;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      color: var(--el-text-color-primary);
     }
 
     .logo-highlight {
-      color: #fbbf24;
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--el-color-primary);
     }
   }
 
   .nav-search {
     flex: 1;
-    max-width: 360px;
+    max-width: 400px;
+    margin-left: 20px;
   }
 
   .nav-actions {
@@ -244,68 +243,92 @@ function handleCommand(command: string) {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 8px;
-  transition: background 0.2s;
+  transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--el-color-primary-light-9);
   }
 
   .username {
     font-size: 14px;
-    color: #ffffff;
+    font-weight: 500;
+    color: var(--el-text-color-regular);
   }
 }
 
 .page-layout {
   display: flex;
   flex: 1;
+  overflow: hidden;
 }
 
 .sidebar {
-  width: 210px;
-  background: #ffffff;
-  border-right: 1px solid #e5e5e5;
-  padding: 12px 0;
+  width: 240px;
+  background: var(--el-bg-color-overlay);
+  border-right: 1px solid var(--el-border-color-light);
+  padding-top: 20px;
   flex-shrink: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1;
+}
+
+.sidebar-bg {
+  margin-top: auto;
+  width: 100%;
+  flex: 1;
+  min-height: 400px;
+  background-image: url('@/assets/Gemini_Generated_Image_ltf5rfltf5rfltf5.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
 }
 
 .nav-item {
-  padding: 10px 16px;
+  padding: 12px 16px;
+  margin: 4px 16px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  transition: all 0.15s;
-  color: #737373;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--el-text-color-regular);
   font-size: 14px;
-  border-left: 3px solid transparent;
+  font-weight: 500;
 
   &:hover {
-    background: rgba(26, 86, 219, 0.04);
-    color: #262626;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    transform: translateX(4px);
   }
 
   &.active {
-    background: rgba(26, 86, 219, 0.06);
-    color: #1a56db;
-    font-weight: 500;
-    border-left-color: #1a56db;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    font-weight: 600;
   }
 }
 
 .nav-divider {
   height: 1px;
-  background: #f0f0f0;
-  margin: 10px 16px;
+  background: var(--el-border-color-light);
+  margin: 16px 24px;
 }
 
 .main-content {
   flex: 1;
   overflow-y: auto;
-  background: #f5f5f5;
+  background: var(--el-bg-color);
 }
 </style>
