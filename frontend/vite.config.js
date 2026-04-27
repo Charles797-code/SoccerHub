@@ -25,6 +25,10 @@ export default defineConfig({
     server: {
         port: 3000,
         proxy: {
+            '/uploads': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+            },
             '/api/uploads': {
                 target: 'http://localhost:8080',
                 changeOrigin: true,
@@ -33,7 +37,6 @@ export default defineConfig({
             '/api/upload': {
                 target: 'http://localhost:8080',
                 changeOrigin: true,
-                rewrite: function (path) { return path.replace(/^\/api\/upload/, '/upload'); },
             },
             '/api': {
                 target: 'http://localhost:8080',
@@ -68,10 +71,6 @@ export default defineConfig({
                 changeOrigin: true,
             },
             '/news': {
-                target: 'http://localhost:8080',
-                changeOrigin: true,
-            },
-            '/uploads': {
                 target: 'http://localhost:8080',
                 changeOrigin: true,
             },

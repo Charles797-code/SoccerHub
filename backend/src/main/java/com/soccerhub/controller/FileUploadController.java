@@ -28,14 +28,18 @@ import java.util.UUID;
 @Tag(name = "Upload", description = "File upload endpoints")
 public class FileUploadController {
 
-    @Value("${upload.path:uploads}")
-    private String uploadPath;
+    private final String uploadPath = "d:/soccer_community/backend/uploads";
 
     @PostMapping("/image")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'CLUB_ADMIN')")
     @Operation(summary = "Upload image file")
     public ResponseEntity<ApiResponse<String>> uploadImage(
             @RequestParam("file") MultipartFile file) {
+        log.info("=== /api/upload/image POST called ===");
+        log.info("ContentType: {}", file.getContentType());
+        log.info("Original filename: {}", file.getOriginalFilename());
+        log.info("Size: {}", file.getSize());
+
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("File is empty"));
         }
@@ -55,6 +59,9 @@ public class FileUploadController {
             String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
             String newFilename = UUID.randomUUID().toString() + extension;
 
+            log.info("Upload path: {}", uploadPath);
+            log.info("Date path: {}", datePath);
+
             Path uploadDir = Paths.get(uploadPath, datePath);
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir);
@@ -62,6 +69,8 @@ public class FileUploadController {
 
             Path filePath = uploadDir.resolve(newFilename);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            log.info("File saved to: {}", filePath);
 
             String fileUrl = "/uploads/" + datePath + "/" + newFilename;
 

@@ -8,7 +8,7 @@
       <div v-for="(player, index) in players" :key="player.playerId" class="rank-row" @click="goToPlayer(player.playerId)">
         <div class="rank-badge" :class="'rank-' + (index + 1)">{{ index + 1 }}</div>
         <div class="player-avatar">
-          <img v-if="player.avatarUrl" :src="getImageUrl(player.avatarUrl)" alt="头像" />
+          <img v-if="player.avatarUrl && player.avatarUrl.length > 0" :src="getImageUrl(player.avatarUrl)" alt="头像" />
           <span v-else>{{ (player.nameCn || player.name)?.charAt(0) }}</span>
         </div>
         <div class="player-info">
@@ -87,7 +87,8 @@ function calcAge(birthDate: string) {
 function getImageUrl(path: string) {
   if (!path) return ''
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return '/api' + path
+  if (path.startsWith('/uploads/')) return path
+  return '/uploads/' + path.replace(/^\//, '')
 }
 </script>
 

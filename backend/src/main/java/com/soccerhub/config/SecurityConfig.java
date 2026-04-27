@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/assets/**").permitAll()
                 .requestMatchers("/vite.svg").permitAll()
                 .requestMatchers(HttpMethod.GET, "/clubs/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/clubs/fix-svg").permitAll()
                 .requestMatchers(HttpMethod.GET, "/players/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/coaches/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/matches/**").permitAll()

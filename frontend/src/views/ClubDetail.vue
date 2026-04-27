@@ -197,7 +197,8 @@ function goToPlayer(playerId: number) {
 function getImageUrl(path: string) {
   if (!path) return ''
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return '/api' + path
+  if (path.startsWith('/uploads/')) return path
+  return '/uploads/' + path.replace(/^\//, '')
 }
 </script>
 

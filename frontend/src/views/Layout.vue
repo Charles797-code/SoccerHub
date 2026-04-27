@@ -198,7 +198,8 @@ function isActive(path: string) {
 function getImageUrl(path: string) {
   if (!path) return ''
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return '/api' + path
+  if (path.startsWith('/uploads/')) return path
+  return '/uploads/' + path.replace(/^\//, '')
 }
 
 onMounted(async () => {

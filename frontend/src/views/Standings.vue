@@ -252,8 +252,8 @@ function getClubLogo(clubId: number) {
 function getImageUrl(path: string) {
   if (!path) return ''
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  if (path.startsWith('/uploads/')) return 'http://localhost:8080' + path
-  return 'http://localhost:8080/api' + path
+  if (path.startsWith('/uploads/')) return path
+  return '/uploads/' + path.replace(/^\//, '')
 }
 
 const leagueNameMap: Record<string, string> = {

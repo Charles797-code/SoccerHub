@@ -446,6 +446,9 @@ public class SocialService {
             Club club = clubMapper.selectById(circle.getClubId());
             if (club != null) {
                 dto.setClubName(club.getName());
+                if (dto.getLogoUrl() == null || dto.getLogoUrl().isEmpty()) {
+                    dto.setLogoUrl(club.getLogoUrl());
+                }
             }
         }
 

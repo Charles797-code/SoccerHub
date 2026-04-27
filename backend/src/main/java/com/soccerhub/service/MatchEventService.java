@@ -275,7 +275,7 @@ public class MatchEventService {
         sql.append("SELECT s.PLAYER_ID, p.NAME AS PLAYER_NAME, p.NAME_CN AS PLAYER_NAME_CN, ");
         sql.append("p.POSITION, s.CLUB_ID, c.NAME AS CLUB_NAME, c.SHORT_NAME AS CLUB_SHORT, ");
         sql.append("c.LOGO_URL AS CLUB_LOGO, s.LEAGUE, s.GOALS, s.ASSISTS, s.YELLOW_CARDS, ");
-        sql.append("s.RED_CARDS, s.APPEARANCES, ");
+        sql.append("s.RED_CARDS, s.APPEARANCES, p.AVATAR_URL AS AVATAR_URL, ");
         sql.append("ROW_NUMBER() OVER (ORDER BY s.").append(sortBy).append(" DESC, s.GOALS DESC) AS RNK ");
         sql.append("FROM PLAYER_SEASON_STATS s ");
         sql.append("JOIN PLAYER p ON s.PLAYER_ID = p.PLAYER_ID ");
@@ -319,6 +319,7 @@ public class MatchEventService {
             r.setRedCards(row.get("RED_CARDS") != null ? ((Number) row.get("RED_CARDS")).intValue() : 0);
             r.setAppearances(row.get("APPEARANCES") != null ? ((Number) row.get("APPEARANCES")).intValue() : 0);
             r.setRank(row.get("RNK") != null ? ((Number) row.get("RNK")).longValue() : 0L);
+            r.setAvatarUrl((String) row.get("AVATAR_URL"));
             rankings.add(r);
         }
 

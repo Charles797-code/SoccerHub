@@ -119,8 +119,8 @@ function goToClub(clubId: number) {
 function getClubLogoUrl(url: string) {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  if (url.startsWith('/uploads/')) return 'http://localhost:8080' + url
-  return 'http://localhost:8080/api' + url
+  if (url.startsWith('/uploads/')) return url
+  return '/uploads/' + url.replace(/^\//, '')
 }
 </script>
 

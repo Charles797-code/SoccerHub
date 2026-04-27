@@ -26,7 +26,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String resourcePath = "file:" + getUploadPath() + "/";
+        String resourcePath = "file:d:/soccer_community/backend/uploads/";
         registry.addResourceHandler("/uploads/**", "/api/uploads/**")
                 .addResourceLocations(resourcePath);
     }
