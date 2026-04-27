@@ -364,6 +364,49 @@
 
 ---
 
+### 十四、赛季管理
+
+#### 14.1 赛季概述
+- 系统支持多联赛多赛季管理
+- 每个联赛可有独立的赛季历史记录
+- 赛季状态：ACTIVE（进行中）、FINISHED（已结束）
+
+#### 14.2 当前赛季
+- 显示所有联赛的当前活跃赛季
+- 查看赛季基本信息：联赛名称、赛季名称、总轮数、开始/结束年份
+- 查看当前进行中的赛季
+
+#### 14.3 历史赛季
+- 展示所有已结束的赛季
+- 保留历史数据用于查询
+
+#### 14.4 开启新赛季
+- **功能描述**：管理员可为任意联赛开启新赛季
+- **支持联赛**：Premier League、La Liga、Serie A、Bundesliga、Ligue 1、Chinese Super League等
+- **支持自定义**：可输入新的联赛名称创建新联赛的赛季
+- **自动操作**：
+  - 将当前赛季状态设为 FINISHED
+  - 清空 LEAGUE_STANDINGS（积分榜数据）
+  - 清空 PLAYER_SEASON_STATS（球员赛季统计）
+  - 清空 MATCH_SCHEDULE（比赛日程）
+  - 创建新的赛季记录
+
+#### 14.5 比赛轮数设置
+- 管理员在创建/编辑比赛时可设置轮数
+- 支持批量设置比赛所属轮次
+- 便于赛程管理和展示
+
+#### 14.6 重置赛季数据
+- **功能描述**：清空指定联赛的积分榜和球员统计
+- **影响范围**：LEAGUE_STANDINGS、PLAYER_SEASON_STATS、MATCH_SCHEDULE
+- **使用场景**：赛季中期重新开始、测试数据清理
+
+#### 14.7 结束赛季
+- **功能描述**：将指定联赛的当前赛季状态设为 FINISHED
+- **影响**：赛季结束标记，不删除历史数据
+
+---
+
 ## 项目结构
 
 ```
@@ -397,6 +440,7 @@ soccer_community/
 │   │   │   ├── AnalyticsController.java  # 数据分析：导入导出Excel/CSV
 │   │   │   ├── AiChatController.java     # AI助手：通义千问对话
 │   │   │   └── FileUploadController.java # 文件上传：头像、图片
+│   │   │   └── SeasonController.java     # 赛季管理：赛季CRUD、新赛季开启
 │   │   ├── service/                      # 业务逻辑层（Service）
 │   │   │   ├── AuthService.java          # 认证业务
 │   │   │   ├── ClubService.java          # 俱乐部业务
@@ -417,6 +461,7 @@ soccer_community/
 │   │   │   ├── AnalyticsService.java     # 数据分析业务
 │   │   │   ├── AiChatService.java        # AI聊天业务
 │   │   │   └── FileUploadService.java    # 文件上传业务
+│   │   │   └── SeasonService.java        # 赛季管理业务
 │   │   ├── mapper/                       # MyBatis Mapper接口
 │   │   │   ├── SysUserMapper.java        # 用户Mapper
 │   │   │   ├── ClubMapper.java           # 俱乐部Mapper
@@ -440,6 +485,7 @@ soccer_community/
 │   │   │   ├── TransferHistoryLogMapper.java # 转会记录Mapper
 │   │   │   ├── AuditLogMapper.java       # 审计日志Mapper
 │   │   │   └── SystemDictionaryMapper.java # 字典Mapper
+│   │   │   └── SeasonMapper.java          # 赛季Mapper
 │   │   ├── entity/                       # 数据库实体（Entity）
 │   │   │   ├── SysUser.java             # 用户实体
 │   │   │   ├── Club.java                # 俱乐部实体
@@ -463,6 +509,7 @@ soccer_community/
 │   │   │   ├── TransferHistoryLog.java  # 转会记录实体
 │   │   │   ├── AuditLog.java            # 审计日志实体
 │   │   │   ├── SystemDictionary.java     # 字典实体
+│   │   │   └── Season.java               # 赛季实体
 │   │   │   └── ...
 │   │   ├── dto/                          # 数据传输对象（DTO）
 │   │   │   ├── ApiResponse.java         # 统一API响应
@@ -728,6 +775,7 @@ server {
 | TRANSFER_HISTORY_LOG | 转会记录表 |
 | AUDIT_LOG | 审计日志表 |
 | SYSTEM_DICTIONARY | 系统字典表 |
+| SEASON | 赛季管理表 |
 
 ### 存储过程
 
@@ -738,12 +786,17 @@ server {
 | osp_Transfer_Player | 球员转会（含权限校验）|
 | osp_Moderate_Message | 消息审核（删除/折叠）|
 | osp_Batch_Update_Standings | 批量更新联赛积分榜 |
+| osp_Start_New_Season | 开启新赛季（结束旧赛季、清空数据、创建新赛季）|
+| osp_Reset_Season_Data | 重置赛季数据（清空积分榜、球员统计、比赛）|
+| osp_Finish_Season | 结束赛季（将赛季状态设为FINISHED）|
 
 ### 触发器
 
 - 评分提交后自动更新球员/教练平均分
 - 比赛结束后自动更新积分榜
 - 进球/助攻后自动更新球员赛季统计
+- 赛季结束时自动将状态更新为FINISHED
+- 新赛季开始后自动清空上赛季数据（积分榜、球员统计、比赛日程）
 
 ---
 
@@ -933,6 +986,21 @@ http://localhost:8080/api/swagger-ui.html
 | GET | /api/analytics/export/{type} | 导出数据 |
 | POST | /api/analytics/import/players | 导入球员 |
 | POST | /api/analytics/import/matches | 导入比赛 |
+
+### 赛季管理模块
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | /api/seasons | 获取所有赛季 |
+| GET | /api/seasons/active | 获取所有活跃赛季 |
+| GET | /api/seasons/league/{league} | 按联赛获取赛季 |
+| GET | /api/seasons/active/{league} | 获取联赛当前赛季 |
+| POST | /api/seasons | 创建赛季（SUPER_ADMIN）|
+| POST | /api/seasons/start-new | 开启新赛季（SUPER_ADMIN）|
+| POST | /api/seasons/reset/{league} | 重置赛季数据（SUPER_ADMIN）|
+| PUT | /api/seasons/finish/{league} | 结束赛季（SUPER_ADMIN）|
+| POST | /api/seasons/init-db | 初始化赛季表（仅首次）|
+| POST | /api/seasons/seed | 初始化赛季数据 |
 
 ### 俱乐部管理员（CLUB_ADMIN）
 

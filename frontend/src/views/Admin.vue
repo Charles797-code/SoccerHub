@@ -480,6 +480,48 @@
             <el-pagination v-model:current-page="postPage" :page-size="pageSize" :total="postTotal" layout="prev, pager, next" @current-change="fetchPosts" />
           </div>
         </el-tab-pane>
+        <el-tab-pane label="赛季管理" name="seasons">
+          <div class="season-section">
+            <div class="season-header">
+              <h3>当前赛季</h3>
+              <el-button type="primary" @click="showStartNewSeasonDialog">开启新赛季</el-button>
+            </div>
+            <el-table :data="activeSeasons" stripe>
+              <el-table-column prop="league" label="联赛" width="150" />
+              <el-table-column prop="seasonName" label="赛季名称" width="120" />
+              <el-table-column prop="totalRounds" label="总轮数" width="80" />
+              <el-table-column prop="status" label="状态" width="100">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'" size="small">{{ row.status === 'ACTIVE' ? '进行中' : row.status }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="startYear" label="开始年份" width="100" />
+              <el-table-column prop="endYear" label="结束年份" width="100" />
+              <el-table-column label="操作" width="250">
+                <template #default="{ row }">
+                  <el-button type="warning" size="small" @click="handleResetSeason(row.league)">重置数据</el-button>
+                  <el-button type="info" size="small" @click="handleFinishSeason(row.league)">结束赛季</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <div class="season-history" style="margin-top: 30px;">
+              <h3>历史赛季</h3>
+              <el-table :data="allSeasons.filter(s => s.status !== 'ACTIVE')" stripe>
+                <el-table-column prop="league" label="联赛" width="150" />
+                <el-table-column prop="seasonName" label="赛季名称" width="120" />
+                <el-table-column prop="totalRounds" label="总轮数" width="80" />
+                <el-table-column prop="status" label="状态" width="100">
+                  <template #default="{ row }">
+                    <el-tag :type="row.status === 'FINISHED' ? 'info' : 'default'" size="small">{{ row.status }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="startYear" label="开始年份" width="100" />
+                <el-table-column prop="endYear" label="结束年份" width="100" />
+              </el-table>
+            </div>
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -751,13 +793,41 @@
         <el-button type="primary" @click="handleSavePlayer">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="newSeasonDialogVisible" title="开启新赛季" width="450px">
+      <el-form :model="newSeasonForm" label-width="100px">
+        <el-form-item label="联赛" required>
+          <el-select v-model="newSeasonForm.league" placeholder="选择或输入联赛名称" allow-create filterable style="width:100%">
+            <el-option label="Premier League" value="Premier League" />
+            <el-option label="La Liga" value="La Liga" />
+            <el-option label="Serie A" value="Serie A" />
+            <el-option label="Bundesliga" value="Bundesliga" />
+            <el-option label="Ligue 1" value="Ligue 1" />
+            <el-option label="Chinese Super League" value="Chinese Super League" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="赛季名称" required>
+          <el-input v-model="newSeasonForm.seasonName" placeholder="如 2026-2027" />
+        </el-form-item>
+        <el-form-item label="总轮数">
+          <el-input-number v-model="newSeasonForm.totalRounds" :min="10" :max="60" />
+        </el-form-item>
+        <el-alert type="warning" :closable="false" style="margin-top: 10px;">
+          开启新赛季将自动结束当前赛季，并清空积分榜、球员数据和比赛数据！
+        </el-alert>
+      </el-form>
+      <template #footer>
+        <el-button @click="newSeasonDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleStartNewSeason">确认开启</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminApi, clubApi, playerApi, newsApi, analyticsApi, socialApi } from '@/api'
+import { adminApi, clubApi, playerApi, newsApi, analyticsApi, socialApi, seasonApi } from '@/api'
 import ImageUpload from '@/components/ImageUpload.vue'
 
 const activeTab = ref('stats')
@@ -831,6 +901,11 @@ const postFilterCircle = ref<any>('')
 const postKeyword = ref('')
 const circles = ref<any[]>([])
 
+const allSeasons = ref<any[]>([])
+const activeSeasons = ref<any[]>([])
+const newSeasonDialogVisible = ref(false)
+const newSeasonForm = ref<any>({ league: '', seasonName: '', totalRounds: 38 })
+
 function matchStatusType(status: string) {
   if (status === 'FINISHED') return 'success'
   if (status === 'IN_PROGRESS') return 'warning'
@@ -861,6 +936,7 @@ watch(activeTab, (tab) => {
   if (tab === 'news' && newsList.value.length === 0) fetchNews()
   if (tab === 'players' && players.value.length === 0) fetchPlayers()
   if (tab === 'community' && posts.value.length === 0) { fetchPosts(); fetchCircles() }
+  if (tab === 'seasons') { fetchAllSeasons(); fetchActiveSeasons() }
 })
 
 onMounted(() => {
@@ -1279,6 +1355,70 @@ async function handleDeletePost(postId: number) {
     fetchPosts()
   } catch (e: any) {
     if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '删除失败')
+  }
+}
+
+async function fetchAllSeasons() {
+  try {
+    const res = await seasonApi.getAll()
+    allSeasons.value = res.data.data || []
+  } catch (e) { console.error(e) }
+}
+
+async function fetchActiveSeasons() {
+  try {
+    const res = await seasonApi.getActive()
+    activeSeasons.value = res.data.data || []
+  } catch (e) { console.error(e) }
+}
+
+function showStartNewSeasonDialog() {
+  newSeasonForm.value = { league: '', seasonName: '', totalRounds: 38 }
+  newSeasonDialogVisible.value = true
+}
+
+async function handleStartNewSeason() {
+  try {
+    if (!newSeasonForm.value.league || !newSeasonForm.value.seasonName) {
+      ElMessage.warning('请填写联赛和赛季名称')
+      return
+    }
+    await ElMessageBox.confirm('确定要开启新赛季吗？这将清空当前赛季的所有数据！', '警告', { type: 'warning' })
+    await seasonApi.startNew({
+      league: newSeasonForm.value.league,
+      seasonName: newSeasonForm.value.seasonName,
+      totalRounds: newSeasonForm.value.totalRounds
+    })
+    ElMessage.success('新赛季已开启')
+    newSeasonDialogVisible.value = false
+    fetchAllSeasons()
+    fetchActiveSeasons()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '操作失败')
+  }
+}
+
+async function handleResetSeason(league: string) {
+  try {
+    await ElMessageBox.confirm('确定要重置 ' + league + ' 的赛季数据吗？这将清空积分榜和球员数据！', '警告', { type: 'warning' })
+    await seasonApi.resetSeason(league)
+    ElMessage.success('赛季数据已重置')
+    fetchAllSeasons()
+    fetchActiveSeasons()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '操作失败')
+  }
+}
+
+async function handleFinishSeason(league: string) {
+  try {
+    await ElMessageBox.confirm('确定要结束 ' + league + ' 当前赛季吗？', '确认', { type: 'warning' })
+    await seasonApi.finishSeason(league)
+    ElMessage.success('赛季已结束')
+    fetchAllSeasons()
+    fetchActiveSeasons()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '操作失败')
   }
 }
 </script>

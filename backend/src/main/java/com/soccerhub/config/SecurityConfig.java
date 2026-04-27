@@ -78,6 +78,7 @@ public class SecurityConfig {
                 .requestMatchers("/ai/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/club-admin/**").hasAnyRole("CLUB_ADMIN", "SUPER_ADMIN")
+                .requestMatchers("/seasons/**").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

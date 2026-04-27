@@ -354,3 +354,20 @@ export const socialApi = {
   deleteComment: (commentId: number) =>
     api.delete(`/social/comments/${commentId}`)
 }
+
+export const seasonApi = {
+  getAll: () =>
+    api.get('/seasons'),
+  getActive: () =>
+    api.get('/seasons/active'),
+  getByLeague: (league: string) =>
+    api.get(`/seasons/league/${encodeURIComponent(league)}`),
+  getActiveByLeague: (league: string) =>
+    api.get(`/seasons/active/${encodeURIComponent(league)}`),
+  startNew: (data: { league: string, seasonName: string, totalRounds: number }) =>
+    api.post('/seasons/start-new', data),
+  resetSeason: (league: string) =>
+    api.post(`/seasons/reset/${encodeURIComponent(league)}`),
+  finishSeason: (league: string) =>
+    api.put(`/seasons/finish/${encodeURIComponent(league)}`)
+}
