@@ -26,7 +26,61 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
+      '/api/uploads': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/uploads/, '/uploads'),
+      },
+      '/api/upload': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/upload/, '/upload'),
+      },
       '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/auth': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/social': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/follows': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/chat': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/admin': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/club-admin': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/stands': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/news': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/upload': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/analytics': {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },

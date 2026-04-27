@@ -1,20 +1,16 @@
 <template>
   <button
-    class="app-button"
-    :class="[
-      `app-button--${type}`,
-      `app-button--${size}`,
-      { 'app-button--loading': loading, 'app-button--block': block }
-    ]"
+    class="app-btn"
+    :class="[`app-btn--${type}`, `app-btn--${size}`, { 'app-btn--loading': loading, 'app-btn--block': block }]"
     :disabled="disabled || loading"
     @click="$emit('click', $event)"
   >
-    <span v-if="loading" class="app-button__spinner">
-      <svg class="app-button__spinner-icon" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4 31.4" />
+    <span v-if="loading" class="app-btn__spinner">
+      <svg class="app-btn__spinner-icon" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="31.4 31.4" />
       </svg>
     </span>
-    <span class="app-button__content" :class="{ 'app-button__content--hidden': loading }">
+    <span class="app-btn__content" :class="{ 'app-btn__content--hidden': loading }">
       <slot />
     </span>
   </button>
@@ -22,172 +18,271 @@
 
 <script setup lang="ts">
 defineProps<{
-  type?: 'primary' | 'success' | 'danger' | 'warning' | 'default'
-  size?: 'small' | 'medium' | 'large'
+  type?: 'primary' | 'secondary' | 'ghost' | 'gold' | 'danger' | 'success'
+  size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   disabled?: boolean
   block?: boolean
 }>()
 
-defineEmits<{
-  click: [event: MouseEvent]
-}>()
+defineEmits<{ click: [event: MouseEvent] }>()
 </script>
 
 <style scoped lang="scss">
-.app-button {
+@use '@/styles/tokens' as *;
+
+// --------------------------------------------------------------------------
+// Base Button
+// --------------------------------------------------------------------------
+
+.app-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-family: inherit;
-  font-weight: 600;
+  gap: $space-2;
+  font-family: $font-body;
+  font-weight: $font-weight-semibold;
   border: none;
-  border-radius: 10px;
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background $duration-normal $ease-out,
+    box-shadow $duration-normal $ease-out,
+    transform $duration-fast $ease-spring,
+    border-color $duration-fast $ease-out,
+    opacity $duration-fast $ease-out;
   outline: none;
   white-space: nowrap;
   user-select: none;
-  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
-    box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.25);
+    box-shadow:
+      0 0 0 3px rgba($purple-primary, 0.35),
+      0 0 0 5px rgba($purple-primary, 0.12);
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+    opacity: 0.45;
     transform: none !important;
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(0.96);
+    transition: transform 80ms $ease-in;
   }
 
+  // --------------------------------------------------------------------------
   // Sizes
-  &--small {
-    padding: 7px 14px;
-    font-size: 13px;
-    border-radius: 8px;
+  // --------------------------------------------------------------------------
+
+  &--sm {
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    border-radius: $radius-sm;
+    gap: $space-1;
   }
 
-  &--medium {
-    padding: 10px 20px;
-    font-size: 14px;
+  &--md {
+    padding: $space-2 $space-5;
+    font-size: $font-size-base;
   }
 
-  &--large {
-    padding: 13px 28px;
-    font-size: 15px;
-    border-radius: 12px;
+  &--lg {
+    padding: $space-3 $space-6;
+    font-size: $font-size-md;
+    border-radius: $radius-lg;
   }
 
+  // --------------------------------------------------------------------------
   // Block
+  // --------------------------------------------------------------------------
+
   &--block {
     width: 100%;
   }
 
-  // Types
+  // --------------------------------------------------------------------------
+  // Primary (Purple gradient)
+  // --------------------------------------------------------------------------
+
   &--primary {
-    background: linear-gradient(135deg, #1a56db 0%, #2d6fd9 50%, #3b82f6 100%);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(26, 86, 219, 0.3), 0 1px 2px rgba(26, 86, 219, 0.15);
+    background: linear-gradient(135deg, $purple-primary 0%, rgba($purple-light, 0.9) 100%);
+    color: $text-primary;
+    box-shadow:
+      0 2px 8px rgba($purple-primary, 0.3),
+      0 0 0 1px rgba($purple-primary, 0.2) inset,
+      0 1px 0 rgba(255, 255, 255, 0.1) inset;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 
     &:not(:disabled):hover {
-      background: linear-gradient(135deg, #1444b8 0%, #1a56db 50%, #2563eb 100%);
-      box-shadow: 0 4px 16px rgba(26, 86, 219, 0.4), 0 2px 4px rgba(26, 86, 219, 0.2);
+      background: linear-gradient(135deg, $purple-hover 0%, rgba($purple-light, 0.95) 100%);
+      box-shadow:
+        0 4px 16px rgba($purple-primary, 0.4),
+        0 0 0 1px rgba($purple-primary, 0.3) inset,
+        0 1px 0 rgba(255, 255, 255, 0.15) inset;
+      transform: translateY(-1px);
+    }
+
+    &:not(:disabled):active:not(:disabled) {
+      box-shadow:
+        0 1px 4px rgba($purple-primary, 0.3),
+        0 0 0 1px rgba($purple-primary, 0.15) inset;
+      transform: scale(0.96);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Secondary
+  // --------------------------------------------------------------------------
+
+  &--secondary {
+    background: rgba($purple-primary, 0.1);
+    color: $purple-light;
+    border: 1.5px solid rgba($purple-primary, 0.3);
+    box-shadow: none;
+
+    &:not(:disabled):hover {
+      background: rgba($purple-primary, 0.18);
+      border-color: rgba($purple-primary, 0.5);
+      color: $text-primary;
       transform: translateY(-1px);
     }
   }
 
-  &--success {
-    background: linear-gradient(135deg, #16a34a 0%, #1ea34a 50%, #22c55e 100%);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3), 0 1px 2px rgba(22, 163, 74, 0.15);
+  // --------------------------------------------------------------------------
+  // Ghost
+  // --------------------------------------------------------------------------
+
+  &--ghost {
+    background: rgba($surface-card, 0.5);
+    color: $text-primary;
+    border: 1.5px solid $border-default;
+    backdrop-filter: blur(8px);
 
     &:not(:disabled):hover {
-      background: linear-gradient(135deg, #138d3e 0%, #16a34a 50%, #1ea34a 100%);
-      box-shadow: 0 4px 16px rgba(22, 163, 74, 0.4), 0 2px 4px rgba(22, 163, 74, 0.2);
+      background: rgba($surface-elevated, 0.8);
+      border-color: rgba($purple-primary, 0.35);
       transform: translateY(-1px);
     }
   }
+
+  // --------------------------------------------------------------------------
+  // Gold
+  // --------------------------------------------------------------------------
+
+  &--gold {
+    background: linear-gradient(135deg, $gold-bright 0%, $gold-dark 100%);
+    color: $text-inverse;
+    box-shadow:
+      0 2px 8px rgba($gold-bright, 0.35),
+      0 0 0 1px rgba($gold-bright, 0.2) inset;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+
+    &:not(:disabled):hover {
+      background: linear-gradient(135deg, #fcd34d 0%, $gold-hover 100%);
+      box-shadow:
+        0 4px 16px rgba($gold-bright, 0.45),
+        0 0 0 1px rgba($gold-bright, 0.25) inset;
+      transform: translateY(-1px);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Danger
+  // --------------------------------------------------------------------------
 
   &--danger {
-    background: linear-gradient(135deg, #dc2626 0%, #e02a2a 50%, #ef4444 100%);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3), 0 1px 2px rgba(220, 38, 38, 0.15);
+    background: linear-gradient(135deg, $danger 0%, rgba($danger-light, 0.9) 100%);
+    color: white;
+    box-shadow:
+      0 2px 8px rgba($danger, 0.3),
+      0 0 0 1px rgba($danger, 0.15) inset;
 
     &:not(:disabled):hover {
-      background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #dc3838 100%);
-      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4), 0 2px 4px rgba(220, 38, 38, 0.2);
+      background: linear-gradient(135deg, $danger-hover 0%, rgba($danger-light, 0.95) 100%);
+      box-shadow:
+        0 4px 16px rgba($danger, 0.4),
+        0 0 0 1px rgba($danger, 0.2) inset;
       transform: translateY(-1px);
     }
   }
 
-  &--warning {
-    background: linear-gradient(135deg, #d97706 0%, #e08a06 50%, #f59e0b 100%);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3), 0 1px 2px rgba(217, 119, 6, 0.15);
+  // --------------------------------------------------------------------------
+  // Success
+  // --------------------------------------------------------------------------
+
+  &--success {
+    background: linear-gradient(135deg, $success 0%, rgba($success-light, 0.9) 100%);
+    color: white;
+    box-shadow:
+      0 2px 8px rgba($success, 0.3),
+      0 0 0 1px rgba($success, 0.15) inset;
 
     &:not(:disabled):hover {
-      background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #e08a06 100%);
-      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.4), 0 2px 4px rgba(217, 119, 6, 0.2);
+      background: linear-gradient(135deg, $success-hover 0%, rgba($success-light, 0.95) 100%);
+      box-shadow:
+        0 4px 16px rgba($success, 0.4),
+        0 0 0 1px rgba($success, 0.2) inset;
       transform: translateY(-1px);
     }
   }
 
-  &--default {
-    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-    color: #262626;
-    border: 1.5px solid #e5e5e5;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-
-    &:not(:disabled):hover {
-      background: linear-gradient(135deg, #f5f5f5 0%, #f0f0f0 100%);
-      border-color: #d0d0d0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      transform: translateY(-1px);
-    }
-  }
-
+  // --------------------------------------------------------------------------
   // Loading
+  // --------------------------------------------------------------------------
+
   &--loading {
     pointer-events: none;
   }
+}
 
-  &__spinner {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.app-btn__spinner {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  &__spinner-icon {
-    width: 18px;
-    height: 18px;
-    animation: app-button-spin 0.75s linear infinite;
-  }
+.app-btn__spinner-icon {
+  width: 16px;
+  height: 16px;
+  animation: app-btn-spin 0.75s linear infinite;
+}
 
-  &__content {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: opacity 0.15s ease;
+.app-btn__content {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  transition: opacity $duration-fast $ease-out;
 
-    &--hidden {
-      opacity: 0;
-    }
+  &--hidden {
+    opacity: 0;
   }
 }
 
-@keyframes app-button-spin {
-  from {
-    transform: rotate(0deg);
+@keyframes app-btn-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-btn {
+    transition: none;
+
+    &:active:not(:disabled) {
+      transform: none;
+    }
+
+    &:not(:disabled):hover {
+      transform: none;
+    }
   }
-  to {
-    transform: rotate(360deg);
+
+  .app-btn__spinner-icon {
+    animation: none;
   }
 }
 </style>

@@ -356,8 +356,11 @@ async function updatePassword() {
 }
 
 function handleAvatarSuccess(res: any) {
-  if (res.data?.url) {
-    tempAvatar.value = getImageUrl(res.data.url)
+  if (res.data) {
+    const url = typeof res.data === 'string' ? res.data : res.data.url
+    if (url) {
+      tempAvatar.value = getImageUrl(url)
+    }
   }
 }
 
@@ -473,7 +476,8 @@ function goToUser(userId: number) {
 function getImageUrl(url: string) {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return '/api' + url
+  if (url.startsWith('/uploads/')) return 'http://localhost:8080' + url
+  return 'http://localhost:8080/api' + url
 }
 
 function formatTime(time: string) {
@@ -490,348 +494,17 @@ function formatTime(time: string) {
 </script>
 
 <style scoped lang="scss">
-.profile-card {
-  display: flex;
-  gap: 24px;
-  padding: 24px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  margin-bottom: 20px;
+@use '@/styles/tokens' as *;
 
-  .profile-avatar-wrapper {
-    position: relative;
-
-    .profile-avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: rgba(26, 86, 219, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-      color: #1a56db;
-      overflow: hidden;
-      cursor: pointer;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .avatar-edit {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 28px;
-      height: 28px;
-      background: #1a56db;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      cursor: pointer;
-      font-size: 14px;
-    }
+.page-header {
+  h1 {
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    letter-spacing: $letter-spacing-tight;
+    margin: 0;
   }
-
-  .profile-info {
-    flex: 1;
-
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-
-    h2 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 700;
-      color: #262626;
-    }
-
-    .role-badge {
-      font-size: 12px;
-      padding: 3px 10px;
-      border-radius: 4px;
-      background: rgba(26, 86, 219, 0.1);
-      color: #1a56db;
-    }
-
-    .username {
-      margin: 0 0 8px;
-      font-size: 14px;
-      color: #a3a3a3;
-    }
-
-    .favorite-club {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: #525252;
-
-      .club-logo {
-        width: 18px;
-        height: 18px;
-        object-fit: contain;
-      }
-    }
-
-    .bio {
-      margin: 0 0 12px;
-      font-size: 14px;
-      color: #525252;
-      line-height: 1.5;
-    }
-
-    .stats-row {
-      display: flex;
-      gap: 24px;
-
-      .stat-item {
-        cursor: pointer;
-        text-align: center;
-
-        .stat-value {
-          display: block;
-          font-size: 20px;
-          font-weight: 700;
-          color: #262626;
-        }
-
-        .stat-label {
-          font-size: 12px;
-          color: #a3a3a3;
-        }
-
-        &:hover .stat-value {
-          color: #1a56db;
-        }
-      }
-    }
-  }
-}
-
-.profile-tabs {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
-.profile-section {
-  padding: 20px 0;
-  border-bottom: 1px solid #f0f0f0;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  h3 {
-    margin: 0 0 16px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #262626;
-  }
-}
-
-.posts-section {
-  .create-post {
-    padding: 16px;
-    background: #f9fafb;
-    border-radius: 8px;
-    margin-bottom: 16px;
-
-    .post-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
-    }
-  }
-}
-
-.posts-list {
-  .post-item {
-    padding: 16px;
-    border-bottom: 1px solid #f0f0f0;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    .post-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-
-      .post-user {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        .user-avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: rgba(26, 86, 219, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
-          color: #1a56db;
-          overflow: hidden;
-
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-        }
-
-        .user-info {
-          .user-name {
-            font-weight: 600;
-            color: #262626;
-          }
-
-          .user-club {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            color: #a3a3a3;
-
-            .club-icon {
-              width: 14px;
-              height: 14px;
-              object-fit: contain;
-            }
-          }
-        }
-      }
-
-      .post-time {
-        font-size: 12px;
-        color: #a3a3a3;
-      }
-    }
-
-    .post-content {
-      font-size: 15px;
-      line-height: 1.6;
-      color: #262626;
-      margin-bottom: 12px;
-    }
-
-    .post-club-tag {
-      margin-bottom: 12px;
-    }
-
-    .post-footer {
-      display: flex;
-      gap: 16px;
-
-      .post-stat {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 13px;
-        color: #a3a3a3;
-        cursor: pointer;
-
-        &:hover {
-          color: #1a56db;
-        }
-
-        &.liked, &.favorited {
-          color: #f59e0b;
-        }
-      }
-    }
-  }
-}
-
-.avatar-uploader {
-  text-align: center;
-
-  .avatar-preview {
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-
-  .avatar-uploader-icon {
-    font-size: 48px;
-    color: #a3a3a3;
-    width: 200px;
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px dashed #e5e5e5;
-    border-radius: 50%;
-  }
-}
-
-.follow-list {
-  max-height: 400px;
-  overflow-y: auto;
-
-  .follow-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-
-    &:hover {
-      background: #f5f5f5;
-    }
-
-    .follow-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(26, 86, 219, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      color: #1a56db;
-      overflow: hidden;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .follow-info {
-      .follow-name {
-        font-weight: 600;
-        color: #262626;
-      }
-
-      .follow-club {
-        display: block;
-        font-size: 12px;
-        color: #a3a3a3;
-      }
-    }
-  }
+  margin-bottom: $space-5;
 }
 </style>

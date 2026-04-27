@@ -10,6 +10,8 @@ interface User {
   email?: string
   avatarUrl?: string
   managedClubId?: number
+  bio?: string
+  favoriteClubId?: number
 }
 
 export const useAuthStore = defineStore('auth', () => {

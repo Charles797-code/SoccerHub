@@ -28,7 +28,6 @@ public class MatchCommentController {
     private final AuthService authService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get comments for a match")
     public ResponseEntity<ApiResponse<PageResponse<MatchComment>>> getComments(
             @PathVariable String matchId,
@@ -40,7 +39,6 @@ public class MatchCommentController {
     }
 
     @GetMapping("/recent")
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get recent comments for a match")
     public ResponseEntity<ApiResponse<List<MatchComment>>> getRecentComments(
             @PathVariable String matchId,

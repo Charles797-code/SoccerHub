@@ -119,70 +119,25 @@ function goToClub(clubId: number) {
 function getClubLogoUrl(url: string) {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return '/api' + url
+  if (url.startsWith('/uploads/')) return 'http://localhost:8080' + url
+  return 'http://localhost:8080/api' + url
 }
 </script>
 
 <style scoped lang="scss">
-.club-info {
-  margin-top: 10px;
+@use '@/styles/tokens' as *;
 
-  .info-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: #737373;
-    margin-bottom: 4px;
-  }
+.page-header h1 {
+  font-family: $font-display;
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  color: $text-primary;
+  letter-spacing: $letter-spacing-tight;
+  margin: 0;
 }
 
-.club-stats {
+.header-actions {
   display: flex;
-  justify-content: space-around;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-
-  .stat {
-    text-align: center;
-
-    .stat-value {
-      display: block;
-      font-size: 16px;
-      font-weight: 700;
-      color: #1a56db;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      color: #a3a3a3;
-    }
-  }
-}
-
-.pagination-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
-}
-
-.club-header {
-  height: 80px;
-  background: linear-gradient(135deg, #1a56db, #3b82f6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  span {
-    color: white;
-  }
+  gap: $space-3;
 }
 </style>

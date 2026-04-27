@@ -350,282 +350,37 @@ function loadMore() {
 </script>
 
 <style scoped lang="scss">
-.match-detail-card {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  margin-bottom: 20px;
+@use '@/styles/tokens' as *;
+
+.page-header {
+  margin-bottom: $space-5;
 }
 
-.match-league-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #1a56db, #3b82f6);
-  color: #fff;
-  font-size: 13px;
-
-  .league-name { font-weight: 600; font-size: 15px; }
-  .match-round { opacity: 0.85; }
-  .match-season { opacity: 0.7; margin-left: auto; }
+.loading-state {
+  padding: $space-10;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
 }
 
-.match-teams-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 24px;
-  gap: 40px;
-}
-
-.team-col {
-  flex: 1;
+.empty-players {
   text-align: center;
-  cursor: pointer;
-  padding: 12px;
-  border-radius: 12px;
-  transition: all 0.2s;
-
-  &:hover { background: #f0f4ff; }
-  &.active { background: rgba(26, 86, 219, 0.08); }
-
-  .team-logo-big {
-    width: 72px;
-    height: 72px;
-    margin: 0 auto 12px;
-    border-radius: 50%;
-    background: #f0f4ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    color: #1a56db;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  .team-name-big {
-    font-size: 18px;
-    font-weight: 600;
-    color: #262626;
-  }
+  padding: $space-8;
+  color: $text-muted;
+  font-size: $font-size-base;
 }
 
-.match-center-col {
+.empty-comments {
   text-align: center;
-  min-width: 140px;
-
-  .score-display {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    .score-num { font-size: 42px; font-weight: 800; color: #262626; }
-    .score-sep { font-size: 32px; color: #a3a3a3; font-weight: 300; }
-    .vs-label { font-size: 28px; color: #a3a3a3; font-weight: 600; }
-  }
-
-  .match-meta {
-    margin-top: 8px;
-    .match-status {
-      font-size: 13px;
-      padding: 3px 14px;
-      border-radius: 12px;
-      &.scheduled, &.pending { background: #f5f5f5; color: #a3a3a3; }
-      &.in_progress, &.live { background: rgba(220, 38, 38, 0.08); color: #dc2626; }
-      &.finished { background: rgba(22, 163, 74, 0.08); color: #16a34a; }
-    }
-  }
-
-  .match-time-info { margin-top: 8px; font-size: 14px; color: #737373; }
-  .match-venue { margin-top: 4px; font-size: 13px; color: #a3a3a3; }
+  padding: $space-8;
+  color: $text-muted;
+  font-size: $font-size-base;
 }
-
-.loading-state { padding: 40px; background: #fff; border-radius: 12px; }
-
-.player-rating-section {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-
-  h2 { font-size: 18px; font-weight: 600; color: #262626; margin: 0; }
-  .comment-count { font-size: 13px; color: #a3a3a3; }
-}
-
-.players-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-}
-
-.player-rating-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid #f0f0f0;
-  transition: all 0.2s;
-
-  &:hover { border-color: #d0d7ff; box-shadow: 0 2px 8px rgba(26, 86, 219, 0.06); }
-}
-
-.player-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-
-  .player-avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: #f0f4ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: #1a56db;
-    flex-shrink: 0;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  .player-detail { min-width: 0; }
-
-  .player-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #262626;
-  }
-
-  .player-meta-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 2px;
-
-    .position-tag {
-      font-size: 10px;
-      padding: 1px 6px;
-      border-radius: 6px;
-      font-weight: 500;
-
-      &.fw { background: rgba(220, 38, 38, 0.08); color: #dc2626; }
-      &.mf { background: rgba(22, 163, 74, 0.08); color: #16a34a; }
-      &.df { background: rgba(37, 99, 235, 0.08); color: #2563eb; }
-      &.gk { background: rgba(234, 179, 8, 0.08); color: #ca8a04; }
-    }
-
-    .jersey-num { font-size: 11px; color: #a3a3a3; }
-  }
-}
-
-.player-score-area {
-  text-align: center;
-  min-width: 50px;
-
-  .avg-score {
-    font-size: 24px;
-    font-weight: 800;
-
-    &.score-high { color: #16a34a; }
-    &.score-mid { color: #ca8a04; }
-    &.score-low { color: #dc2626; }
-  }
-
-  .rating-count { font-size: 10px; color: #a3a3a3; margin-top: 2px; }
-}
-
-.player-rate-action {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  min-width: 120px;
-
-  .my-score-badge {
-    font-size: 11px;
-    color: #1a56db;
-    background: rgba(26, 86, 219, 0.06);
-    padding: 1px 8px;
-    border-radius: 8px;
-  }
-
-  :deep(.el-rate) {
-    height: 20px;
-    .el-rate__icon { font-size: 14px !important; margin-right: 2px !important; }
-  }
-}
-
-.empty-players { text-align: center; padding: 32px; color: #a3a3a3; font-size: 14px; }
-
-.comment-section {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  padding: 24px;
-}
-
-.comment-input-area {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.comments-list { display: flex; flex-direction: column; gap: 16px; }
-
-.comment-item {
-  display: flex;
-  gap: 12px;
-
-  .comment-avatar {
-    width: 38px; height: 38px; border-radius: 50%;
-    background: rgba(26, 86, 219, 0.08);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; color: #1a56db; flex-shrink: 0;
-  }
-
-  .comment-body { flex: 1; min-width: 0; }
-
-  .comment-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
-    .comment-username { font-size: 13px; font-weight: 500; color: #262626; }
-    .comment-time { font-size: 12px; color: #a3a3a3; }
-  }
-
-  .comment-content { font-size: 14px; color: #404040; line-height: 1.6; word-break: break-word; }
-}
-
-.empty-comments { text-align: center; padding: 32px; color: #a3a3a3; font-size: 14px; }
 
 .load-more {
-  text-align: center; margin-top: 16px; padding-top: 12px;
-  border-top: 1px solid #f5f5f5;
+  text-align: center;
+  margin-top: $space-4;
+  padding-top: $space-3;
+  border-top: 1px solid $border-subtle;
 }
 </style>

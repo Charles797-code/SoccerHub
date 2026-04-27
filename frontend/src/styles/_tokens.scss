@@ -1,0 +1,278 @@
+// ==========================================================================
+// SoccerHub Design System — Premium Sports Theme
+// ==========================================================================
+
+// --------------------------------------------------------------------------
+// 1. Color System
+// --------------------------------------------------------------------------
+
+// Brand Core (lighter variants for hover states)
+$purple-hover:    #8b5cf6;
+$gold-hover:     #f59e0b;
+$success-hover:  #22c55e;
+$danger-hover:   #ef4444;
+
+$purple-deepest:   #1a0533;  // 极深紫（背景）
+$purple-deep:      #2d0a52;  // 深紫
+$purple-dark:      #4c1d95;  // 暗紫（文字）
+$purple-primary:    #7c3aed;  // 主色紫
+$purple-light:     #a78bfa;  // 淡紫
+$purple-lighter:   #c4b5fd;  // 极淡紫
+$purple-glow:      #8b5cf6;  // 发光紫
+
+// Gold Accent（紫金双色系统）
+$gold-bright:      #fbbf24;  // 亮金
+$gold-dark:        #d97706;  // 暗金
+$gold-warm:        #f59e0b;  // 暖金
+
+// Semantic Colors
+$success:          #22c55e;
+$success-light:    #4ade80;
+$danger:           #ef4444;
+$danger-light:     #f87171;
+$warning:          #f59e0b;
+$info:             #3b82f6;
+
+// Surface & Background
+$surface-base:     #0f0a1a;  // 最深背景（导航栏）
+$surface-dark:     #150d26;  // 深色背景
+$surface-mid:      #1e1435;  // 中间层背景
+$surface-card:     #241947;  // 卡片背景
+$surface-elevated: #2d1f55;  // 悬浮层
+$surface-glass:    rgba(45, 15, 85, 0.6); // 玻璃态
+
+// Text
+$text-primary:     #f5f3ff;  // 主文字（淡紫白）
+$text-secondary:   #c4b5fd;  // 次文字
+$text-muted:       #8b7db5;  // 弱化文字
+$text-inverse:     #0f0a1a;  // 反色文字
+
+// Border & Divider
+$border-subtle:    rgba(167, 139, 250, 0.12);
+$border-default:   rgba(167, 139, 250, 0.2);
+$border-strong:    rgba(167, 139, 250, 0.35);
+
+// --------------------------------------------------------------------------
+// 2. Typography System
+// --------------------------------------------------------------------------
+
+$font-display:   'Russo One', 'Segoe UI', sans-serif;
+$font-body:      'Chakra Petch', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+$font-mono:      'JetBrains Mono', 'Fira Code', monospace;
+
+$font-size-xs:   11px;
+$font-size-sm:   13px;
+$font-size-base: 14px;
+$font-size-md:   15px;
+$font-size-lg:   16px;
+$font-size-xl:   18px;
+$font-size-2xl:  22px;
+$font-size-3xl:  28px;
+$font-size-4xl:  36px;
+$font-size-5xl:  48px;
+
+$font-weight-regular: 400;
+$font-weight-medium:  500;
+$font-weight-semibold: 600;
+$font-weight-bold:    700;
+$font-weight-black:   800;
+
+$line-height-tight:  1.2;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+$letter-spacing-tight:  -0.5px;
+$letter-spacing-wide:   0.5px;
+$letter-spacing-wider:  1px;
+
+// --------------------------------------------------------------------------
+// 3. Spacing System (8pt base)
+// --------------------------------------------------------------------------
+
+$space-0:   0px;
+$space-1:   4px;
+$space-2:   8px;
+$space-3:   12px;
+$space-4:   16px;
+$space-5:   20px;
+$space-6:   24px;
+$space-8:   32px;
+$space-10:  40px;
+$space-12:  48px;
+$space-16:  64px;
+$space-20:  80px;
+$space-24:  96px;
+
+// --------------------------------------------------------------------------
+// 4. Border Radius
+// --------------------------------------------------------------------------
+
+$radius-sm:    6px;
+$radius-md:    10px;
+$radius-lg:    14px;
+$radius-xl:    18px;
+$radius-2xl:   24px;
+$radius-full:  9999px;
+
+// --------------------------------------------------------------------------
+// 5. Shadow System
+// --------------------------------------------------------------------------
+
+$shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.06);
+$shadow-md:    0 4px 6px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(167, 139, 250, 0.1);
+$shadow-lg:    0 10px 15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(167, 139, 250, 0.12);
+$shadow-xl:    0 20px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(167, 139, 250, 0.15);
+$shadow-glow:  0 0 20px rgba(124, 58, 237, 0.35), 0 0 40px rgba(124, 58, 237, 0.15);
+$shadow-gold:  0 0 16px rgba(251, 191, 36, 0.3), 0 0 32px rgba(251, 191, 36, 0.1);
+$shadow-inner: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+
+// --------------------------------------------------------------------------
+// 6. Animation System
+// --------------------------------------------------------------------------
+
+$ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+$ease-smooth:  cubic-bezier(0.4, 0, 0.2, 1);
+$ease-out:     cubic-bezier(0, 0, 0.2, 1);
+$ease-in:      cubic-bezier(0.4, 0, 1, 1);
+
+$duration-instant: 100ms;
+$duration-fast:   150ms;
+$duration-normal: 250ms;
+$duration-slow:   400ms;
+$duration-slower: 600ms;
+
+// --------------------------------------------------------------------------
+// 7. Layout
+// --------------------------------------------------------------------------
+
+$header-height:     60px;
+$sidebar-width:     228px;
+$content-max-width: 1280px;
+$card-max-width:    400px;
+
+// --------------------------------------------------------------------------
+// 8. Z-Index Scale
+// --------------------------------------------------------------------------
+
+$z-base:     0;
+$z-raised:   10;
+$z-dropdown: 100;
+$z-sticky:   200;
+$z-overlay:  300;
+$z-modal:     400;
+$z-toast:    500;
+$z-tooltip:  600;
+
+// --------------------------------------------------------------------------
+// 9. Mixins
+// --------------------------------------------------------------------------
+
+@mixin glass-surface($opacity: 0.6) {
+  background: rgba(30, 20, 53, $opacity);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+}
+
+@mixin card($radius: $radius-lg) {
+  background: $surface-card;
+  border-radius: $radius;
+  border: 1px solid $border-subtle;
+  box-shadow: $shadow-md;
+}
+
+@mixin glow-border($color: $purple-primary) {
+  border: 1px solid rgba($color, 0.4);
+  box-shadow: 0 0 0 1px rgba($color, 0.1),
+              0 0 16px rgba($color, 0.2);
+}
+
+@mixin hover-lift($shadow: $shadow-lg) {
+  transition: transform $duration-normal $ease-spring,
+              box-shadow $duration-normal $ease-out,
+              border-color $duration-fast $ease-out;
+
+  &:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: $shadow;
+  }
+}
+
+@mixin press-effect {
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+    transition: transform 80ms $ease-in;
+  }
+}
+
+@mixin focus-ring($color: $purple-primary) {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($color, 0.35),
+                0 0 0 5px rgba($color, 0.15);
+  }
+}
+
+@mixin text-gradient($from: $gold-bright, $to: $gold-dark) {
+  background: linear-gradient(135deg, $from 0%, $to 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin shimmer {
+  background: linear-gradient(
+    90deg,
+    $surface-card 0%,
+    rgba(167, 139, 250, 0.08) 50%,
+    $surface-card 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+// --------------------------------------------------------------------------
+// 10. Animations
+// --------------------------------------------------------------------------
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: $shadow-glow; }
+  50%       { box-shadow: 0 0 30px rgba(124, 58, 237, 0.5), 0 0 60px rgba(124, 58, 237, 0.2); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

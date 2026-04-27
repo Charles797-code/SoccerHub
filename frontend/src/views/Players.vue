@@ -96,100 +96,36 @@ function goToPlayer(playerId: number) {
 </script>
 
 <style scoped lang="scss">
-.player-card {
+@use '@/styles/tokens' as *;
+
+.page-header {
+  h1 {
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    letter-spacing: $letter-spacing-tight;
+    margin: 0;
+  }
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
-  background: #ffffff;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-
-  &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .player-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: rgba(26, 86, 219, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: #1a56db;
-    flex-shrink: 0;
-  }
-
-  .player-info {
-    flex: 1;
-    min-width: 0;
-
-    h4 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 500;
-      color: #262626;
-    }
-
-    .player-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-
-      .club-name {
-        font-size: 13px;
-        color: #737373;
-      }
-
-      .position-badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 4px;
-        background: rgba(26, 86, 219, 0.1);
-        color: #1a56db;
-      }
-
-      .jersey-number {
-        font-size: 12px;
-        color: #a3a3a3;
-      }
-    }
-  }
-
-  .player-score {
-    text-align: center;
-
-    .score-value {
-      display: block;
-      font-size: 20px;
-      font-weight: 700;
-      color: #1a56db;
-    }
-
-    .score-label {
-      font-size: 10px;
-      color: #a3a3a3;
-    }
-  }
+  margin-bottom: $space-5;
 }
 
-.pagination-wrapper {
+.header-actions {
   display: flex;
-  justify-content: center;
-  margin-top: 24px;
+  gap: $space-3;
+  align-items: center;
 }
 
 .empty-state {
   text-align: center;
-  padding: 40px;
-  color: #737373;
-  font-size: 14px;
-  background: #ffffff;
-  border-radius: 10px;
+  padding: $space-12 $space-4;
+  color: $text-muted;
+  font-size: $font-size-base;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
 }
 </style>

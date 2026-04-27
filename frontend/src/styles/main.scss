@@ -1,34 +1,71 @@
-$primary-color: #1a56db;
-$primary-light: #3b82f6;
-$primary-dark: #1444b8;
-$success-color: #16a34a;
-$success-light: #22c55e;
-$danger-color: #dc2626;
-$danger-light: #ef4444;
-$warning-color: #d97706;
-$warning-light: #f59e0b;
-$bg-body: #f5f5f5;
-$bg-card: #ffffff;
-$bg-sidebar: #ffffff;
-$bg-header: #1a56db;
-$text-primary: #262626;
-$text-secondary: #737373;
-$text-light: #a3a3a3;
-$border-color: #e5e5e5;
-$border-light: #f0f0f0;
+// ==========================================================================
+// SoccerHub — Global Styles
+// ==========================================================================
 
-* {
+@use 'tokens' as *;
+@use 'components';
+
+// --------------------------------------------------------------------------
+// Google Fonts Import
+// --------------------------------------------------------------------------
+
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Russo+One&family=JetBrains+Mono:wght@400;500&display=swap');
+
+// --------------------------------------------------------------------------
+// CSS Variables Bridge (for JS + non-SCSS contexts)
+// --------------------------------------------------------------------------
+
+:root {
+  --color-purple-deepest:  #1a0533;
+  --color-purple-deep:     #2d0a52;
+  --color-purple-dark:     #4c1d95;
+  --color-purple-primary:  #7c3aed;
+  --color-purple-light:    #a78bfa;
+  --color-purple-lighter:  #c4b5fd;
+  --color-gold-bright:     #fbbf24;
+  --color-gold-dark:       #d97706;
+  --color-success:         #22c55e;
+  --color-danger:          #ef4444;
+  --color-warning:         #f59e0b;
+  --color-surface-base:    #0f0a1a;
+  --color-surface-dark:     #150d26;
+  --color-surface-mid:      #1e1435;
+  --color-surface-card:     #241947;
+  --color-surface-elevated: #2d1f55;
+  --color-text-primary:    #f5f3ff;
+  --color-text-secondary:  #c4b5fd;
+  --color-text-muted:     #8b7db5;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   18px;
+  --radius-2xl:  24px;
+  --radius-full: 9999px;
+  --header-height: 60px;
+  --sidebar-width: 228px;
+}
+
+// --------------------------------------------------------------------------
+// Reset & Base
+// --------------------------------------------------------------------------
+
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  background: $bg-body;
+  font-family: $font-body;
+  background: $surface-dark;
   color: $text-primary;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: $line-height-normal;
 }
 
 a {
@@ -36,498 +73,770 @@ a {
   color: inherit;
 }
 
+button {
+  font-family: inherit;
+}
+
+// --------------------------------------------------------------------------
+// Custom Scrollbar
+// --------------------------------------------------------------------------
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: $surface-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba($purple-light, 0.25);
+  border-radius: $radius-full;
+
+  &:hover {
+    background: rgba($purple-light, 0.45);
+  }
+}
+
+// --------------------------------------------------------------------------
+// Text Selection
+// --------------------------------------------------------------------------
+
+::selection {
+  background: rgba($purple-primary, 0.4);
+  color: $text-primary;
+}
+
+// --------------------------------------------------------------------------
+// Focus States
+// --------------------------------------------------------------------------
+
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba($purple-primary, 0.4),
+              0 0 0 5px rgba($purple-primary, 0.15);
+}
+
+// --------------------------------------------------------------------------
+// Page Layout Helpers
+// --------------------------------------------------------------------------
+
 .page-container {
-  max-width: 1200px;
+  background: $surface-dark;
+  max-width: $content-max-width;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: $space-6 $space-4;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: $space-6;
 
   h1 {
     margin: 0;
-    font-size: 22px;
-    font-weight: 600;
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
     color: $text-primary;
-    letter-spacing: -0.3px;
+    letter-spacing: $letter-spacing-tight;
   }
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+// --------------------------------------------------------------------------
+// Section System
+// --------------------------------------------------------------------------
+
+.section {
+  margin-bottom: $space-8;
+  animation: fadeIn 400ms $ease-out both;
 }
 
-.club-card {
-  background: $bg-card;
-  border-radius: 12px;
-  overflow: hidden;
-  border: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-4;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .club-header {
-    height: 80px;
-    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+  h2 {
+    margin: 0;
+    font-family: $font-display;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    gap: $space-2;
+    letter-spacing: $letter-spacing-tight;
   }
 
-  .club-body {
-    padding: 14px;
+  .view-all {
+    font-size: $font-size-sm;
+    color: $purple-light;
+    transition: color $duration-fast $ease-out;
 
-    h3 {
-      margin: 0 0 8px 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: $text-primary;
-      line-height: 1.3;
-    }
-
-    .league-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      background: rgba($primary-color, 0.08);
-      color: $primary-color;
-      margin-bottom: 10px;
-    }
-
-    .club-info {
-      .info-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        color: $text-secondary;
-        margin-bottom: 4px;
-      }
-    }
-
-    .club-stats {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid $border-light;
-
-      .stat {
-        text-align: center;
-
-        .stat-value {
-          display: block;
-          font-size: 16px;
-          font-weight: 700;
-          color: $primary-color;
-        }
-
-        .stat-label {
-          font-size: 11px;
-          color: $text-light;
-        }
-      }
+    &:hover {
+      color: $gold-bright;
     }
   }
 }
 
-.player-card {
-  background: $bg-card;
-  border-radius: 10px;
-  padding: 14px;
+// --------------------------------------------------------------------------
+// Card System
+// --------------------------------------------------------------------------
+
+.card {
+  @include card($radius-lg);
+  @include hover-lift($shadow-lg);
+  @include focus-ring;
+
+  cursor: pointer;
+}
+
+.card-static {
+  @include card($radius-lg);
+  @include focus-ring;
+}
+
+// --------------------------------------------------------------------------
+// Badge System
+// --------------------------------------------------------------------------
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px $space-2;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: $letter-spacing-wide;
+  text-transform: uppercase;
+
+  &--primary {
+    background: rgba($purple-primary, 0.15);
+    color: $purple-light;
+    border: 1px solid rgba($purple-primary, 0.3);
+  }
+
+  &--gold {
+    background: rgba($gold-bright, 0.12);
+    color: $gold-bright;
+    border: 1px solid rgba($gold-bright, 0.25);
+  }
+
+  &--success {
+    background: rgba($success, 0.12);
+    color: $success-light;
+    border: 1px solid rgba($success, 0.25);
+  }
+
+  &--danger {
+    background: rgba($danger, 0.12);
+    color: $danger-light;
+    border: 1px solid rgba($danger, 0.25);
+  }
+
+  &--muted {
+    background: rgba($purple-light, 0.08);
+    color: $text-muted;
+    border: 1px solid $border-subtle;
+  }
+}
+
+// --------------------------------------------------------------------------
+// Empty State
+// --------------------------------------------------------------------------
+
+.empty-state {
+  text-align: center;
+  padding: $space-12 $space-4;
+  color: $text-muted;
+  font-size: $font-size-base;
+  background: $surface-card;
+  border-radius: $radius-lg;
+  border: 1px solid $border-subtle;
+}
+
+// --------------------------------------------------------------------------
+// Divider
+// --------------------------------------------------------------------------
+
+.divider {
+  height: 1px;
+  background: $border-subtle;
+  margin: $space-4 0;
+}
+
+// --------------------------------------------------------------------------
+// Avatar
+// --------------------------------------------------------------------------
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-full;
+  background: linear-gradient(135deg, $purple-primary, $purple-light);
   display: flex;
   align-items: center;
-  gap: 14px;
-  border: none;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  justify-content: center;
+  font-family: $font-display;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $text-primary;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1.5px solid rgba($purple-light, 0.3);
 
-  &:hover {
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  .player-avatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, $primary-color, $primary-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: 600;
-    color: white;
-    flex-shrink: 0;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+  &--sm {
+    width: 32px;
+    height: 32px;
+    font-size: $font-size-sm;
   }
 
-  .player-info {
-    flex: 1;
-    min-width: 0;
-
-    h4 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 600;
-      color: $text-primary;
-      line-height: 1.3;
-    }
-
-    .position {
-      font-size: 12px;
-      color: $text-secondary;
-      margin: 3px 0;
-    }
-
-    .nationality {
-      font-size: 12px;
-      color: $text-light;
-    }
+  &--lg {
+    width: 56px;
+    height: 56px;
+    font-size: $font-size-xl;
   }
 
-  .player-score {
-    text-align: center;
-    min-width: 48px;
-
-    .score-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: $primary-color;
-    }
-
-    .score-label {
-      font-size: 10px;
-      color: $text-light;
-    }
+  &--xl {
+    width: 80px;
+    height: 80px;
+    font-size: $font-size-3xl;
   }
 }
 
-.match-card {
-  background: $bg-card;
-  border-radius: 12px;
-  padding: 16px;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+// --------------------------------------------------------------------------
+// Element Plus Overrides
+// --------------------------------------------------------------------------
 
-  .match-league {
-    font-size: 12px;
-    color: $primary-color;
-    font-weight: 500;
-    margin-bottom: 12px;
-  }
-
-  .match-teams {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-
-    .team {
-      flex: 1;
-      text-align: center;
-
-      .team-logo {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 8px;
-        border-radius: 50%;
-        background: $bg-body;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        color: $text-secondary;
-        overflow: hidden;
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-      }
-
-      .team-name {
-        font-size: 13px;
-        font-weight: 500;
-        color: $text-primary;
-        line-height: 1.3;
-      }
-    }
-
-    .match-score {
-      font-size: 26px;
-      font-weight: 700;
-      color: $text-primary;
-      min-width: 50px;
-      text-align: center;
-    }
-  }
-
-  .match-time {
-    margin-top: 10px;
-    font-size: 12px;
-    color: $text-light;
-    text-align: center;
-  }
-
-  .match-status {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-
-    &.live {
-      background: rgba($danger-color, 0.1);
-      color: $danger-color;
-    }
-
-    &.finished {
-      background: rgba($success-color, 0.1);
-      color: $success-color;
-    }
-
-    &.pending {
-      background: $bg-body;
-      color: $text-light;
-    }
-  }
-}
-
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  .chat-header {
-    padding: 14px 16px;
-    background: $bg-card;
-    border-bottom: 1px solid $border-color;
-    border-radius: 12px 12px 0 0;
-    font-weight: 600;
-    color: $text-primary;
-    font-size: 15px;
-  }
-
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: $bg-body;
-
-    .message {
-      display: flex;
-      gap: 8px;
-      max-width: 85%;
-
-      &.own {
-        flex-direction: row-reverse;
-        align-self: flex-end;
-
-        .message-content {
-          background: $primary-color;
-          color: white;
-
-          .message-author {
-            color: rgba(255, 255, 255, 0.8);
-          }
-
-          .message-time {
-            color: rgba(255, 255, 255, 0.6);
-          }
-        }
-      }
-
-      .message-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: $primary-color;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        color: white;
-        flex-shrink: 0;
-      }
-
-      .message-content {
-        background: $bg-card;
-        padding: 8px 12px;
-        border-radius: 8px;
-        max-width: 100%;
-        font-size: 14px;
-        line-height: 1.5;
-
-        .message-author {
-          font-size: 11px;
-          color: $primary-color;
-          font-weight: 500;
-          margin-bottom: 2px;
-        }
-
-        .message-time {
-          font-size: 10px;
-          color: $text-light;
-          margin-top: 4px;
-          text-align: right;
-        }
-      }
-    }
-  }
-
-  .chat-input {
-    padding: 12px;
-    background: $bg-card;
-    border-radius: 0 0 12px 12px;
-    display: flex;
-    gap: 10px;
-    border-top: 1px solid $border-color;
-  }
-}
-
+// Table
 .el-table {
-  --el-table-bg-color: #{$bg-card};
-  --el-table-tr-bg-color: #{$bg-card};
-  --el-table-header-bg-color: #{$bg-body};
-  --el-table-row-hover-bg-color: rgba($primary-color, 0.03);
-  --el-table-border-color: #{$border-color};
+  --el-table-bg-color: #{$surface-card};
+  --el-table-tr-bg-color: #{$surface-card};
+  --el-table-header-bg-color: #{$surface-mid};
+  --el-table-row-hover-bg-color: #{rgba($purple-primary, 0.06)};
+  --el-table-border-color: #{$border-subtle};
   --el-table-text-color: #{$text-primary};
   --el-table-header-text-color: #{$text-secondary};
-  border-radius: 10px;
+  --el-table-fixed-box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  border-radius: $radius-lg;
   overflow: hidden;
+  border: 1px solid $border-subtle;
+  background: $surface-card !important;
+
+  th.el-table__cell {
+    font-family: $font-display;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-wide;
+    text-transform: uppercase;
+    background: $surface-mid !important;
+    border-bottom: 1px solid $border-default !important;
+  }
+
+  td.el-table__cell {
+    background: $surface-card !important;
+    border-bottom: 1px solid $border-subtle !important;
+    font-size: $font-size-base;
+  }
+
+  tr {
+    background: $surface-card !important;
+
+    &:hover td {
+      background-color: rgba($purple-primary, 0.06) !important;
+    }
+  }
+
+  .el-table__body-wrapper {
+    background: $surface-card !important;
+  }
+
+  .el-table__body {
+    background: $surface-card !important;
+  }
+
+  tr:hover td.el-table__cell {
+    background-color: rgba($purple-primary, 0.06) !important;
+  }
+
+  .el-table__body tr.hover-row:hover > td.el-table__cell,
+  .el-table__body tr.hover-row.current-row > td.el-table__cell {
+    background-color: rgba($purple-primary, 0.08) !important;
+  }
+
+  .el-table__empty-block {
+    background: $surface-card !important;
+  }
 }
 
+// Tabs
+.el-tabs {
+  --el-tabs-header-height: 48px;
+
+  .el-tabs__header {
+    margin-bottom: 0;
+  }
+
+  .el-tabs__nav-wrap::after {
+    background: $border-subtle;
+    height: 1px;
+  }
+
+  .el-tabs__item {
+    font-family: $font-body;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    color: $text-muted;
+    padding: 0 $space-5;
+    transition: color $duration-fast $ease-out;
+
+    &:hover {
+      color: $purple-light;
+    }
+
+    &.is-active {
+      color: $purple-primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  .el-tabs__active-bar {
+    background: linear-gradient(90deg, $purple-primary, $purple-light);
+    height: 3px;
+    border-radius: $radius-full;
+    transition: all $duration-normal $ease-spring;
+  }
+}
+
+.el-tabs--border-card {
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  overflow: hidden;
+
+  > .el-tabs__header {
+    background: $surface-mid;
+    margin: 0;
+  }
+
+  > .el-tabs__header .el-tabs__item.is-active {
+    color: $text-primary;
+    background: $surface-card;
+    border-right-color: $border-subtle;
+    border-left-color: $border-subtle;
+  }
+
+  > .el-tabs__header .el-tabs__item {
+    color: $text-muted;
+    border: none;
+
+    &:hover {
+      color: $text-primary;
+    }
+  }
+}
+
+// Input
+.el-input__wrapper {
+  background: $surface-card !important;
+  border: 1px solid $border-default !important;
+  border-radius: $radius-md !important;
+  box-shadow: none !important;
+  transition: border-color $duration-fast $ease-out,
+              box-shadow $duration-fast $ease-out !important;
+
+  &:hover {
+    border-color: rgba($purple-primary, 0.5) !important;
+  }
+
+  &.is-focus {
+    border-color: $purple-primary !important;
+    box-shadow: 0 0 0 3px rgba($purple-primary, 0.2) !important;
+  }
+}
+
+.el-input__inner {
+  color: $text-primary !important;
+  font-family: $font-body !important;
+
+  &::placeholder {
+    color: $text-muted !important;
+  }
+}
+
+.el-input__prefix .el-input__prefix-inner {
+  color: $text-muted;
+}
+
+// Select
+.el-select {
+  .el-input__wrapper {
+    background: $surface-card !important;
+  }
+}
+
+.el-select-dropdown {
+  background: $surface-mid !important;
+  border: 1px solid $border-default !important;
+  border-radius: $radius-md !important;
+  box-shadow: $shadow-lg !important;
+  overflow: hidden;
+
+  .el-select-dropdown__item {
+    color: $text-primary;
+    font-family: $font-body;
+    font-size: $font-size-base;
+    padding: $space-2 $space-4;
+    transition: background $duration-fast $ease-out;
+
+    &:hover {
+      background: rgba($purple-primary, 0.12);
+    }
+
+    &.selected {
+      color: $purple-primary;
+      font-weight: $font-weight-semibold;
+      background: rgba($purple-primary, 0.08);
+    }
+
+    &.is-hovering {
+      background: rgba($purple-primary, 0.1);
+    }
+  }
+
+  .el-select-dropdown__empty {
+    color: $text-muted;
+  }
+}
+
+.el-popper.is-light {
+  background: $surface-mid !important;
+  border: 1px solid $border-default !important;
+}
+
+// Pagination
 .el-pagination {
-  --el-pagination-bg-color: #{$bg-card};
+  --el-pagination-bg-color: #{$surface-card};
   --el-pagination-text-color: #{$text-secondary};
-  --el-pagination-button-bg-color: #{$bg-card};
-  --el-pagination-hover-color: #{$primary-color};
+  --el-pagination-button-bg-color: #{$surface-card};
+  --el-pagination-button-color: #{$text-secondary};
+  --el-pagination-hover-color: #{$purple-primary};
+  --el-pagination-button-disabled-bg-color: #{$surface-mid};
+  --el-pagination-button-disabled-color: #{$text-muted};
+
+  .el-pager li {
+    background: $surface-card;
+    color: $text-secondary;
+    border-radius: $radius-sm;
+    font-family: $font-body;
+    border: 1px solid $border-subtle;
+
+    &:hover {
+      color: $purple-primary;
+      border-color: rgba($purple-primary, 0.3);
+    }
+
+    &.is-active {
+      background: linear-gradient(135deg, $purple-primary, $purple-light);
+      color: $text-primary;
+      border-color: transparent;
+      font-weight: $font-weight-bold;
+      box-shadow: 0 0 12px rgba($purple-primary, 0.4);
+    }
+  }
+
+  .btn-prev, .btn-next {
+    background: $surface-card;
+    color: $text-secondary;
+    border: 1px solid $border-subtle;
+    border-radius: $radius-sm;
+
+    &:hover {
+      color: $purple-primary;
+      border-color: rgba($purple-primary, 0.3);
+    }
+
+    &:disabled {
+      background: $surface-mid;
+      color: $text-muted;
+    }
+  }
 }
 
+// Button
 .el-button {
-  &.el-button--primary {
-    background: $primary-color;
-    border-color: $primary-color;
-    font-weight: 500;
+  font-family: $font-body;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-md;
+  transition: all $duration-normal $ease-out;
+  @include press-effect;
+  @include focus-ring;
+
+  &--primary {
+    background: linear-gradient(135deg, $purple-primary, $purple-light);
+    border-color: transparent;
+    color: $text-primary;
+    box-shadow: 0 2px 8px rgba($purple-primary, 0.3);
 
     &:hover, &:focus {
-      background: $primary-light;
-      border-color: $primary-light;
+      background: linear-gradient(135deg, $purple-hover, $purple-light);
+      border-color: transparent;
+      box-shadow: 0 4px 16px rgba($purple-primary, 0.45);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  &--default {
+    background: $surface-card;
+    border-color: $border-default;
+    color: $text-secondary;
+
+    &:hover, &:focus {
+      background: $surface-elevated;
+      border-color: rgba($purple-primary, 0.4);
+      color: $text-primary;
+    }
+  }
+
+  &--text {
+    color: $purple-light;
+    background: transparent;
+
+    &:hover {
+      color: $gold-bright;
+      background: rgba($purple-primary, 0.08);
     }
   }
 }
 
-.el-tabs {
-  :deep(.el-tabs__item.is-active) {
-    color: $primary-color;
-    font-weight: 600;
-  }
+// Radio Button
+.el-radio-button__inner {
+  background: $surface-card;
+  border-color: $border-default;
+  color: $text-secondary;
+  font-family: $font-body;
 
-  :deep(.el-tabs__active-bar) {
-    background-color: $primary-color;
-    height: 3px;
-    border-radius: 2px;
-  }
-
-  :deep(.el-tabs__item:hover) {
-    color: $primary-color;
+  &:hover {
+    color: $text-primary;
   }
 }
 
-.el-select-dropdown__item.selected {
-  color: $primary-color !important;
-  font-weight: 600;
+.el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background: linear-gradient(135deg, $purple-primary, $purple-light);
+  border-color: transparent;
+  color: $text-primary;
+  box-shadow: none;
+  font-weight: $font-weight-semibold;
 }
 
-.page-layout {
-  display: flex;
-  min-height: calc(100vh - 56px);
+// Rate
+.el-rate__icon {
+  color: $text-muted;
 
-  .sidebar {
-    width: 210px;
-    background: $bg-sidebar;
-    padding: 0;
-    flex-shrink: 0;
-    border-right: 1px solid $border-color;
-    position: sticky;
-    top: 56px;
-    height: calc(100vh - 56px);
-    overflow-y: auto;
+  &.hover {
+    color: $gold-bright;
+  }
+}
 
-    .logo {
-      padding: 18px 16px;
-      font-size: 18px;
-      font-weight: 700;
-      color: $primary-color;
-      letter-spacing: -0.5px;
+.el-rate__result {
+  color: $gold-bright;
+}
+
+// Dialog
+.el-dialog {
+  background: $surface-card !important;
+  border: 1px solid $border-default !important;
+  border-radius: $radius-xl !important;
+  box-shadow: $shadow-xl !important;
+
+  .el-dialog__header {
+    border-bottom: 1px solid $border-subtle;
+    padding: $space-5 $space-6;
+    margin-right: 0;
+
+    .el-dialog__title {
+      font-family: $font-display;
+      font-size: $font-size-xl;
+      color: $text-primary;
     }
 
-    .nav-item {
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: $text-secondary;
-      font-size: 14px;
-      border-left: 3px solid transparent;
+    .el-dialog__headerbtn .el-dialog__close {
+      color: $text-muted;
 
       &:hover {
-        background: rgba($primary-color, 0.04);
         color: $text-primary;
-      }
-
-      &.active {
-        background: rgba($primary-color, 0.06);
-        color: $primary-color;
-        font-weight: 500;
-        border-left-color: $primary-color;
       }
     }
   }
 
-  .main-content {
-    flex: 1;
-    overflow-y: auto;
-    background: $bg-body;
-    min-height: calc(100vh - 56px);
+  .el-dialog__body {
+    color: $text-primary;
+    padding: $space-6;
+  }
+
+  .el-dialog__footer {
+    border-top: 1px solid $border-subtle;
+    padding: $space-4 $space-6;
   }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+// Skeleton
+.el-skeleton {
+  .el-skeleton__item {
+    background: linear-gradient(
+      90deg,
+      $surface-card 0%,
+      rgba($purple-light, 0.06) 50%,
+      $surface-card 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: $radius-md;
+  }
+}
+
+// Message
+.el-message {
+  background: $surface-mid;
+  border: 1px solid $border-default;
+  border-radius: $radius-md;
+  box-shadow: $shadow-lg;
+  color: $text-primary;
+}
+
+// Tag
+.el-tag {
+  border-radius: $radius-sm;
+  font-family: $font-body;
+
+  &--info {
+    background: rgba($purple-primary, 0.12);
+    border-color: rgba($purple-primary, 0.25);
+    color: $purple-light;
+  }
+
+  &--success {
+    background: rgba($success, 0.12);
+    border-color: rgba($success, 0.25);
+    color: $success-light;
+  }
+
+  &--danger {
+    background: rgba($danger, 0.12);
+    border-color: rgba($danger, 0.25);
+    color: $danger-light;
+  }
+
+  &--warning {
+    background: rgba($warning, 0.12);
+    border-color: rgba($warning, 0.25);
+    color: $warning;
+  }
+}
+
+// Dropdown
+.el-dropdown-menu {
+  background: $surface-mid;
+  border: 1px solid $border-default;
+  border-radius: $radius-md;
+  box-shadow: $shadow-lg;
+  padding: $space-1 0;
+
+  .el-dropdown-menu__item {
+    color: $text-primary;
+    font-family: $font-body;
+    font-size: $font-size-base;
+    padding: $space-2 $space-4;
+    transition: background $duration-fast $ease-out;
+
+    &:hover {
+      background: rgba($purple-primary, 0.12);
+      color: $purple-light;
+    }
+  }
+
+  .el-dropdown-menu__item--divided {
+    border-top: 1px solid $border-subtle;
+    margin-top: $space-1;
+  }
+}
+
+// Dropdown popup
+.el-popper.is-light {
+  background: $surface-mid !important;
+  border-color: $border-default !important;
+}
+
+// El-empty
+.el-empty {
+  .el-empty__image {
+    svg {
+      fill: $text-muted !important;
+      opacity: 0.4;
+    }
+  }
+
+  .el-empty__description {
+    color: $text-muted !important;
+  }
+
+  .el-empty__btn .el-button {
+    background: linear-gradient(135deg, $purple-primary, $purple-light);
+    border-color: transparent;
+    color: $text-primary;
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+}
+
+// Switch
+.el-switch.is-checked {
+  .el-switch__core {
+    background: linear-gradient(135deg, $purple-primary, $purple-light);
+    border-color: transparent;
+  }
+}
+
+// --------------------------------------------------------------------------
+// Scrollbar for Element components
+.el-select-dropdown__list {
+  padding: $space-1 0;
+}
+
+// Card overrides for Element
+.el-card {
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  color: $text-primary;
+}
+
+// Form label
+.el-form-item__label {
+  color: $text-secondary;
+  font-family: $font-body;
+}
+
+// Switch
+.el-switch.is-checked {
+  .el-switch__core {
+    background: linear-gradient(135deg, $purple-primary, $purple-light);
+    border-color: transparent;
+  }
 }

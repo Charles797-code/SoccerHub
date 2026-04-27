@@ -26,14 +26,13 @@ public class MatchPlayerRatingController {
     private final AuthService authService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get player ratings for a match by club")
     public ResponseEntity<ApiResponse<List<MatchPlayerRatingVO>>> getPlayerRatings(
             @PathVariable String matchId,
             @RequestParam Long clubId,
             Authentication authentication) {
-        SysUser user = authService.getCurrentUser(authentication.getName());
-        List<MatchPlayerRatingVO> ratings = ratingService.getMatchPlayerRatings(matchId, clubId, user.getUserId());
+        Long userId = (authentication != null) ? authService.getCurrentUser(authentication.getName()).getUserId() : null;
+        List<MatchPlayerRatingVO> ratings = ratingService.getMatchPlayerRatings(matchId, clubId, userId);
         return ResponseEntity.ok(ApiResponse.success(ratings));
     }
 

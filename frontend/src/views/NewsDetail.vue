@@ -195,7 +195,8 @@ async function handleDeleteComment(commentId: number) {
 function getImageUrl(path: string) {
   if (!path) return ''
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return '/api' + path
+  if (path.startsWith('/uploads/')) return 'http://localhost:8080' + path
+  return 'http://localhost:8080' + path
 }
 
 function formatDate(time: string) {
@@ -220,11 +221,22 @@ function formatTime(time: string) {
 </script>
 
 <style scoped lang="scss">
+@use '@/styles/tokens' as *;
+
+.loading-state {
+  padding: $space-8;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
+  margin-bottom: $space-5;
+}
+
 .article-detail {
-  background: #ffffff;
-  border-radius: 12px;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
   overflow: hidden;
-  margin-bottom: 24px;
+  margin-bottom: $space-6;
 }
 
 .article-cover {
@@ -240,116 +252,110 @@ function formatTime(time: string) {
 }
 
 .article-header {
-  padding: 24px 28px 0;
+  padding: $space-6 $space-8 0;
 
   h1 {
-    margin: 0 0 14px;
-    font-size: 24px;
-    font-weight: 700;
-    color: #1a1a1a;
-    line-height: 1.4;
+    margin: 0 0 $space-4;
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    line-height: $line-height-tight;
+    letter-spacing: $letter-spacing-tight;
   }
 
   .article-meta {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    color: #a3a3a3;
+    gap: $space-3;
+    font-size: $font-size-sm;
+    color: $text-muted;
 
     .source-tag {
-      background: rgba(26, 86, 219, 0.1);
-      color: #1a56db;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
+      background: rgba($purple-primary, 0.12);
+      color: $purple-light;
+      padding: 2px 10px;
+      border-radius: $radius-sm;
+      border: 1px solid rgba($purple-primary, 0.2);
+      font-weight: $font-weight-medium;
     }
   }
 }
 
 .article-body {
-  padding: 20px 28px 28px;
+  padding: $space-6 $space-8;
 
   .article-content {
     p {
-      font-size: 15px;
-      line-height: 1.8;
-      color: #333;
-      margin: 0 0 16px;
+      font-size: $font-size-md;
+      line-height: $line-height-relaxed;
+      color: rgba($text-primary, 0.85);
+      margin: 0 0 $space-4;
     }
   }
 
   .article-source {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid #f0f0f0;
+    margin-top: $space-5;
+    padding-top: $space-4;
+    border-top: 1px solid $border-subtle;
   }
 }
 
-.loading-state {
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  margin-bottom: 24px;
-}
-
 .comment-section {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 24px 28px;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
+  padding: $space-6;
 
   .section-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: $space-3;
+    margin-bottom: $space-5;
 
     h2 {
       margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #262626;
+      font-family: $font-display;
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: $text-primary;
+      letter-spacing: $letter-spacing-tight;
     }
 
     .comment-count {
-      font-size: 13px;
-      color: #a3a3a3;
+      font-size: $font-size-sm;
+      color: $text-muted;
     }
   }
 }
 
 .comment-input {
-  margin-bottom: 24px;
-
-  .el-textarea {
-    margin-bottom: 10px;
-  }
-
-  .el-button {
-    float: right;
-  }
+  margin-bottom: $space-5;
+  padding-bottom: $space-4;
+  border-bottom: 1px solid $border-subtle;
 }
 
 .comments-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $space-4;
 }
 
 .comment-item {
   display: flex;
-  gap: 12px;
+  gap: $space-3;
 
   .comment-avatar {
     width: 36px;
     height: 36px;
-    border-radius: 50%;
-    background: #f0f4ff;
+    border-radius: $radius-full;
+    background: linear-gradient(135deg, rgba($purple-primary, 0.15), rgba($purple-light, 0.08));
+    border: 1px solid rgba($purple-primary, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    color: #1a56db;
+    font-size: $font-size-sm;
+    color: $purple-light;
     flex-shrink: 0;
   }
 
@@ -360,25 +366,25 @@ function formatTime(time: string) {
     .comment-header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: $space-2;
       margin-bottom: 4px;
 
       .comment-user {
-        font-size: 13px;
-        font-weight: 600;
-        color: #262626;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $text-secondary;
       }
 
       .comment-time {
-        font-size: 12px;
-        color: #a3a3a3;
+        font-size: $font-size-xs;
+        color: $text-muted;
       }
     }
 
     .comment-text {
-      font-size: 14px;
-      color: #404040;
-      line-height: 1.6;
+      font-size: $font-size-base;
+      color: rgba($text-primary, 0.85);
+      line-height: $line-height-normal;
       word-break: break-word;
     }
   }
@@ -386,14 +392,14 @@ function formatTime(time: string) {
 
 .no-comments {
   text-align: center;
-  padding: 30px;
-  color: #a3a3a3;
-  font-size: 14px;
+  padding: $space-8;
+  color: $text-muted;
+  font-size: $font-size-base;
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: $space-5;
 }
 </style>

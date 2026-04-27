@@ -23,7 +23,7 @@
       <div class="chat-input">
         <el-input v-model="inputMessage" placeholder="输入消息..." size="large"
           @keyup.enter="sendMessage" :disabled="!isConnected" />
-        <AppButton type="primary" size="large" :disabled="!isConnected || !inputMessage.trim()" @click="sendMessage">
+        <AppButton type="primary" size="lg" :disabled="!isConnected || !inputMessage.trim()" @click="sendMessage">
           发送
         </AppButton>
       </div>
@@ -107,119 +107,17 @@ function formatTime(timestamp: string) {
 </script>
 
 <style scoped lang="scss">
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 180px);
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
+@use '@/styles/tokens' as *;
 
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 18px;
-
-  &::-webkit-scrollbar {
-    width: 4px;
+.page-header {
+  h1 {
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    letter-spacing: $letter-spacing-tight;
+    margin: 0;
   }
-
-  &::-webkit-scrollbar-thumb {
-    background: #e5e5e5;
-    border-radius: 2px;
-  }
-}
-
-.message {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-
-  &.own {
-    flex-direction: row-reverse;
-
-    .message-content {
-      align-items: flex-end;
-
-      .message-text {
-        background: #1a56db;
-        color: white;
-      }
-    }
-  }
-
-  .message-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(26, 86, 219, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    color: #1a56db;
-    flex-shrink: 0;
-  }
-
-  .message-content {
-    display: flex;
-    flex-direction: column;
-    max-width: 60%;
-
-    .message-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-
-      .message-username {
-        font-size: 12px;
-        font-weight: 500;
-        color: #262626;
-      }
-
-      .fan-badge {
-        font-size: 10px;
-        padding: 1px 6px;
-        border-radius: 8px;
-        background: rgba(26, 86, 219, 0.08);
-        color: #1a56db;
-        font-weight: 500;
-        white-space: nowrap;
-      }
-
-      .message-time {
-        font-size: 11px;
-        color: #a3a3a3;
-      }
-    }
-
-    .message-text {
-      padding: 10px 14px;
-      border-radius: 10px;
-      background: #f5f5f5;
-      font-size: 14px;
-      color: #262626;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-  }
-}
-
-.chat-input {
-  display: flex;
-  gap: 10px;
-  padding: 14px 18px;
-  border-top: 1px solid #f0f0f0;
-  background: #fafafa;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: #737373;
-  font-size: 14px;
+  margin-bottom: $space-5;
 }
 </style>

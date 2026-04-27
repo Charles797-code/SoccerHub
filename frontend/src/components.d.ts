@@ -9,7 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppButton: typeof import('./components/AppButton.vue')['default']
     Chat: typeof import('./components/Chat.vue')['default']
-    ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElDescriptions: typeof import('element-plus/es')['ElDescriptions']

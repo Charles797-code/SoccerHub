@@ -202,242 +202,91 @@ function getImageUrl(path: string) {
 </script>
 
 <style scoped lang="scss">
-.club-banner {
-  position: relative;
-  height: 200px;
-  background: linear-gradient(135deg, #1a56db, #3b82f6);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 24px;
-
-  .banner-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.3);
-  }
-
-  .banner-content {
-    position: absolute;
-    bottom: 24px;
-    left: 24px;
-    right: 24px;
-    display: flex;
-    align-items: flex-end;
-    gap: 20px;
-    color: white;
-
-    .club-logo {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      font-weight: 700;
-      flex-shrink: 0;
-      overflow: hidden;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .club-meta {
-      h1 {
-        margin: 0 0 8px;
-        font-size: 24px;
-        font-weight: 700;
-      }
-
-      .meta-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-
-        .meta-item {
-          opacity: 0.9;
-        }
-      }
-    }
-  }
-}
-
-.player-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  background: #ffffff;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-
-  &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .player-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(26, 86, 219, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: #1a56db;
-    flex-shrink: 0;
-  }
-
-  .player-info {
-    flex: 1;
-    min-width: 0;
-
-    h4 {
-      margin: 0;
-      font-size: 14px;
-      font-weight: 500;
-      color: #262626;
-    }
-
-    .player-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-
-      .position-badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 4px;
-        background: rgba(26, 86, 219, 0.1);
-        color: #1a56db;
-      }
-
-      .jersey-number {
-        font-size: 12px;
-        color: #a3a3a3;
-      }
-    }
-  }
-
-  .player-score {
-    text-align: center;
-
-    .score-value {
-      display: block;
-      font-size: 18px;
-      font-weight: 700;
-      color: #1a56db;
-    }
-
-    .score-label {
-      font-size: 10px;
-      color: #a3a3a3;
-    }
-  }
-}
-
-.match-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 14px;
-  background: #ffffff;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-
-  .match-date {
-    font-size: 13px;
-    color: #737373;
-    min-width: 60px;
-  }
-
-  .match-teams {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-
-    .team-name {
-      font-size: 14px;
-      font-weight: 500;
-      color: #262626;
-    }
-
-    .match-score {
-      font-size: 16px;
-      font-weight: 700;
-      color: #1a56db;
-      min-width: 50px;
-      text-align: center;
-    }
-  }
-
-  .match-status {
-    font-size: 12px;
-    padding: 3px 10px;
-    border-radius: 4px;
-
-    &.live, &.in_progress {
-      background: rgba(220, 38, 38, 0.08);
-      color: #dc2626;
-    }
-
-    &.finished {
-      background: rgba(22, 163, 74, 0.08);
-      color: #16a34a;
-    }
-
-    &.pending {
-      background: #f5f5f5;
-      color: #a3a3a3;
-    }
-  }
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-
-  .info-item {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-
-    .info-label {
-      display: block;
-      font-size: 12px;
-      color: #a3a3a3;
-      margin-bottom: 4px;
-    }
-
-    .info-value {
-      font-size: 16px;
-      font-weight: 500;
-      color: #262626;
-    }
-  }
-}
+@use '@/styles/tokens' as *;
 
 .empty-state {
   text-align: center;
-  padding: 40px;
-  color: #737373;
-  font-size: 14px;
+  padding: $space-12 $space-4;
+  color: $text-muted;
+  font-size: $font-size-base;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
 }
 
 .loading-state {
-  padding: 24px;
+  padding: $space-6;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
+}
+
+.detail-tabs {
+  background: transparent;
+}
+
+.matches-list {
+  .match-row {
+    display: flex;
+    align-items: center;
+    gap: $space-4;
+    padding: $space-3 $space-4;
+    background: $surface-card;
+    border: 1px solid $border-subtle;
+    border-radius: $radius-lg;
+    margin-bottom: $space-2;
+
+    .match-date {
+      font-size: $font-size-sm;
+      color: $text-muted;
+      min-width: 60px;
+    }
+
+    .match-teams {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $space-3;
+
+      .team-name {
+        font-size: $font-size-base;
+        font-weight: $font-weight-medium;
+        color: $text-primary;
+      }
+
+      .match-score {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-bold;
+        color: $gold-bright;
+        min-width: 50px;
+        text-align: center;
+      }
+    }
+
+    .match-status {
+      font-size: $font-size-xs;
+      padding: 3px 10px;
+      border-radius: $radius-full;
+
+      &.live, &.in_progress {
+        background: rgba($danger, 0.12);
+        color: $danger-light;
+        border: 1px solid rgba($danger, 0.2);
+      }
+
+      &.finished {
+        background: rgba($success, 0.12);
+        color: $success-light;
+        border: 1px solid rgba($success, 0.2);
+      }
+
+      &.pending {
+        background: $surface-mid;
+        color: $text-muted;
+        border: 1px solid $border-subtle;
+      }
+    }
+  }
 }
 </style>

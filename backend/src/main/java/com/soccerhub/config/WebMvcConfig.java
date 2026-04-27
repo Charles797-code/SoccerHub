@@ -7,17 +7,28 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.file.Paths;
+
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Value("${upload.path:uploads}")
     private String uploadPath;
 
+    private String getUploadPath() {
+        String baseDir = System.getProperty("user.dir");
+        String path = Paths.get(baseDir, uploadPath).toString();
+        if (!java.nio.file.Files.exists(java.nio.file.Paths.get(path))) {
+            path = "d:/soccer_community/backend/uploads";
+        }
+        return path;
+    }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadAbsolutePath = System.getProperty("user.dir") + "/" + uploadPath;
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadAbsolutePath + "/");
+        String resourcePath = "file:" + getUploadPath() + "/";
+        registry.addResourceHandler("/uploads/**", "/api/uploads/**")
+                .addResourceLocations(resourcePath);
     }
 
     @Override
