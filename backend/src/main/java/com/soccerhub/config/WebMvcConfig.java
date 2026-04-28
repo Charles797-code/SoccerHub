@@ -3,11 +3,8 @@ package com.soccerhub.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.nio.file.Paths;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -15,20 +12,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${upload.path:uploads}")
     private String uploadPath;
 
-    private String getUploadPath() {
-        String baseDir = System.getProperty("user.dir");
-        String path = Paths.get(baseDir, uploadPath).toString();
-        if (!java.nio.file.Files.exists(java.nio.file.Paths.get(path))) {
-            path = "d:/soccer_community/backend/uploads";
-        }
-        return path;
-    }
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String resourcePath = "file:d:/soccer_community/backend/uploads/";
+        String uploadResourcePath = "file:d:/soccer_community/backend/uploads/";
         registry.addResourceHandler("/uploads/**", "/api/uploads/**")
-                .addResourceLocations(resourcePath);
+                .addResourceLocations(uploadResourcePath);
+
+        registry.addResourceHandler("/assets/**")
+                .addResourceLocations("classpath:/static/assets/");
+
+        registry.addResourceHandler("/*.svg", "/*.css", "/*.js", "/index.html")
+                .addResourceLocations("classpath:/static/");
     }
 
     @Override
