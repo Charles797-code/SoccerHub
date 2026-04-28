@@ -129,6 +129,8 @@ export const matchApi = {
     api.get('/matches', { params }),
   getById: (id: string) =>
     api.get(`/matches/${id}`),
+  getEvents: (id: string) =>
+    api.get(`/matches/${id}/events`),
   getToday: () =>
     api.get('/matches/today'),
   getLive: () =>
@@ -139,6 +141,19 @@ export const matchApi = {
     api.post('/matches/upsert', data),
   delete: (matchId: string) =>
     api.delete(`/matches/${matchId}`)
+}
+
+export const predictionApi = {
+  make: (data: any) =>
+    api.post('/predictions', null, { params: data }),
+  getForMatch: (matchId: string, userId: number) =>
+    api.get(`/predictions/match/${matchId}`, { params: { userId } }),
+  getUserPredictions: (userId: number) =>
+    api.get(`/predictions/user/${userId}`),
+  getUserPredictionsWithMatch: (userId: number) =>
+    api.get(`/predictions/user/${userId}/with-match`),
+  getUserPoints: (userId: number) =>
+    api.get(`/predictions/user/${userId}/points`)
 }
 
 export const ratingApi = {

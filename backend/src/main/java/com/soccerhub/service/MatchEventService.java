@@ -29,6 +29,13 @@ public class MatchEventService {
     private final ClubMapper clubMapper;
     private final JdbcTemplate jdbcTemplate;
 
+    public List<MatchEvent> getEventsByMatchId(String matchId) {
+        QueryWrapper<MatchEvent> wrapper = new QueryWrapper<>();
+        wrapper.eq("MATCH_ID", matchId);
+        wrapper.orderByAsc("MATCH_MINUTE");
+        return matchEventMapper.selectList(wrapper);
+    }
+
     @Transactional
     public MatchSchedule finishMatch(FinishMatchRequest request) {
         MatchSchedule match = matchMapper.selectById(request.getMatchId());

@@ -522,6 +522,10 @@
             </div>
           </div>
         </el-tab-pane>
+
+        <el-tab-pane label="竞猜管理" name="predictions">
+          <PredictionAdmin />
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -829,6 +833,7 @@ import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi, clubApi, playerApi, newsApi, analyticsApi, socialApi, seasonApi } from '@/api'
 import ImageUpload from '@/components/ImageUpload.vue'
+import PredictionAdmin from '@/components/PredictionAdmin.vue'
 
 const activeTab = ref('stats')
 const pageSize = ref(20)

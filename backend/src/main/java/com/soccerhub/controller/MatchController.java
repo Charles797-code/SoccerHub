@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.soccerhub.dto.ApiResponse;
 import com.soccerhub.dto.MatchUpsertRequest;
 import com.soccerhub.dto.PageResponse;
+import com.soccerhub.entity.MatchEvent;
 import com.soccerhub.entity.MatchSchedule;
+import com.soccerhub.service.MatchEventService;
 import com.soccerhub.service.MatchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,7 @@ import java.util.List;
 public class MatchController {
 
     private final MatchService matchService;
+    private final MatchEventService matchEventService;
 
     @GetMapping
     @Operation(summary = "List matches")
@@ -45,6 +48,12 @@ public class MatchController {
         MatchSchedule match = matchService.getMatchById(id);
         if (match == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.success(match));
+    }
+
+    @GetMapping("/{id}/events")
+    @Operation(summary = "Get match events by match ID")
+    public ResponseEntity<ApiResponse<List<MatchEvent>>> getMatchEvents(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.success(matchEventService.getEventsByMatchId(id)));
     }
 
     @GetMapping("/today")

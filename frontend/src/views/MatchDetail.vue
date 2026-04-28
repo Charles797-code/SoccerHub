@@ -48,6 +48,77 @@
       <el-skeleton :rows="5" animated />
     </div>
 
+    <div v-if="match && matchEvents.length > 0" class="match-events-section">
+      <div class="section-header">
+        <h2>⚽ 比赛事件</h2>
+      </div>
+      <div class="events-timeline">
+        <div v-for="event in matchEvents" :key="event.eventId" class="event-item" :class="event.eventType.toLowerCase()">
+          <div class="event-minute">{{ event.matchMinute }}'</div>
+          <div class="event-icon">
+            <span v-if="event.eventType === 'GOAL'">⚽</span>
+            <span v-else-if="event.eventType === 'PENALTY'">🔢</span>
+            <span v-else-if="event.eventType === 'OWN_GOAL'">⚽🔴</span>
+            <span v-else-if="event.eventType === 'YELLOW_CARD'">🟨</span>
+            <span v-else-if="event.eventType === 'RED_CARD'">🟥</span>
+            <span v-else-if="event.eventType === 'SUBSTITUTION'">🔄</span>
+            <span v-else>•</span>
+          </div>
+          <div class="event-info">
+            <span class="event-player">{{ getPlayerName(event.playerId) }}</span>
+            <span v-if="event.eventType === 'GOAL' && event.assistPlayerId" class="event-assist">助攻: {{ getPlayerName(event.assistPlayerId) }}</span>
+            <span class="event-type-label">{{ getEventTypeLabel(event.eventType) }}</span>
+          </div>
+          <div class="event-team">{{ getClubName(event.clubId) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="match && canPredict" class="prediction-section">
+      <div class="section-header">
+        <h2>🎯 球迷竞猜</h2>
+        <span class="points-display">我的积分: {{ userPoints }}</span>
+      </div>
+
+      <div v-if="myPrediction" class="my-prediction-card">
+        <div class="prediction-info">
+          <div class="prediction-result">
+            <span class="prediction-label">我的预测:</span>
+            <span class="prediction-value">{{ getResultLabel(myPrediction.predictedResult) }}</span>
+            <span v-if="myPrediction.predictedHomeScore !== null" class="prediction-score">
+              ({{ myPrediction.predictedHomeScore }} - {{ myPrediction.predictedAwayScore }})
+            </span>
+          </div>
+          <div class="prediction-status" :class="myPrediction.status?.toLowerCase()">
+            {{ myPrediction.status === 'PENDING' ? '待开奖' : myPrediction.status === 'SETTLED' ? `已结算 (+${myPrediction.pointsEarned}分)` : '' }}
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="prediction-form">
+        <div class="prediction-teams">
+          <span class="team-name">{{ getClubName(match.homeClubId) }}</span>
+          <span class="vs">VS</span>
+          <span class="team-name">{{ getClubName(match.awayClubId) }}</span>
+        </div>
+
+        <div class="prediction-inputs">
+          <el-radio-group v-model="predictionResult" class="result-select">
+            <el-radio value="HOME_WIN">{{ getClubName(match.homeClubId) }} 胜</el-radio>
+            <el-radio value="DRAW">平局</el-radio>
+            <el-radio value="AWAY_WIN">{{ getClubName(match.awayClubId) }} 胜</el-radio>
+          </el-radio-group>
+        </div>
+
+        <el-button
+          type="primary"
+          :loading="submittingPrediction"
+          :disabled="!predictionResult"
+          @click="submitPrediction"
+        >提交预测</el-button>
+      </div>
+    </div>
+
     <div v-if="match" class="player-rating-section">
       <div class="section-header">
         <h2>⭐ 球员评分</h2>
@@ -154,7 +225,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
-import { matchApi, clubApi } from '@/api'
+import { matchApi, clubApi, predictionApi } from '@/api'
 import api from '@/api'
 import { useAuthStore } from '@/stores/auth'
 
@@ -173,6 +244,13 @@ const pageSize = 20
 
 const selectedClubId = ref<number>(0)
 const playerRatings = ref<any[]>([])
+const matchEvents = ref<any[]>([])
+const playerNameMap = ref<Record<number, string>>({})
+const userPoints = ref<number>(0)
+const myPrediction = ref<any>(null)
+const predictionDialogVisible = ref(false)
+const predictionResult = ref('')
+const submittingPrediction = ref(false)
 
 const clubNameMap = ref<Record<number, string>>({})
 const clubLogoMap = ref<Record<number, string>>({})
@@ -198,17 +276,44 @@ const positionMap: Record<string, string> = {
   FW: '前锋', MF: '中场', DF: '后卫', GK: '门将'
 }
 
+const eventTypeLabelMap: Record<string, string> = {
+  GOAL: '进球',
+  PENALTY: '点球',
+  OWN_GOAL: '乌龙球',
+  ASSIST: '助攻',
+  YELLOW_CARD: '黄牌',
+  RED_CARD: '红牌',
+  SUBSTITUTION: '换人'
+}
+
+function getEventTypeLabel(type: string) { return eventTypeLabelMap[type] || type }
+
 function getLeagueNameCN(league: string) { return leagueNameMap[league] || league }
 function getStatusLabel(status: string) { return statusLabelMap[status] || status }
 function getClubName(clubId: number) { return clubNameMap.value[clubId] || `球队${clubId}` }
 function getClubLogo(clubId: number) { return clubLogoMap.value[clubId] || '' }
 function getUserName(userId: number) { return userNameMap.value[userId] || `用户${userId}` }
+function getPlayerName(playerId: number) { return playerNameMap.value[playerId] || `球员${playerId}` }
 
 function getScoreClass(score: number) {
   if (!score || score === 0) return ''
   if (score >= 8) return 'score-high'
   if (score >= 6) return 'score-mid'
   return 'score-low'
+}
+
+function canPredict() {
+  if (!match.value) return false
+  return authStore.isLoggedIn && (match.value.status === 'PENDING' || match.value.status === 'SCHEDULED')
+}
+
+function getResultLabel(result: string) {
+  const map: Record<string, string> = {
+    HOME_WIN: '主队胜',
+    AWAY_WIN: '客队胜',
+    DRAW: '平局'
+  }
+  return map[result] || result
 }
 
 function getImageUrl(path: string) {
@@ -258,7 +363,76 @@ onMounted(async () => {
   } catch (e) { console.error(e) }
 
   fetchComments()
+  fetchMatchEvents()
+  if (authStore.isLoggedIn) {
+    fetchUserPoints()
+    fetchMyPrediction()
+  }
 })
+
+async function fetchMatchEvents() {
+  try {
+    const res = await matchApi.getEvents(matchId)
+    matchEvents.value = res.data.data || []
+    const playerIds = new Set<number>()
+    matchEvents.value.forEach((e: any) => {
+      if (e.playerId) playerIds.add(e.playerId)
+      if (e.assistPlayerId) playerIds.add(e.assistPlayerId)
+    })
+    if (playerIds.size > 0) {
+      await loadPlayerNames(Array.from(playerIds))
+    }
+  } catch (e) { console.error(e) }
+}
+
+async function loadPlayerNames(playerIds: number[]) {
+  for (const id of playerIds) {
+    if (!playerNameMap.value[id]) {
+      try {
+        const res = await api.get(`/players/${id}`)
+        const player = res.data.data
+        playerNameMap.value[id] = player?.nameCn || player?.name || `球员${id}`
+      } catch {
+        playerNameMap.value[id] = `球员${id}`
+      }
+    }
+  }
+}
+
+async function fetchUserPoints() {
+  if (!authStore.user) return
+  try {
+    const res = await predictionApi.getUserPoints(authStore.user.userId)
+    userPoints.value = res.data.data?.points || 0
+  } catch (e) { console.error(e) }
+}
+
+async function fetchMyPrediction() {
+  if (!authStore.user || !match.value) return
+  try {
+    const res = await predictionApi.getForMatch(matchId, authStore.user.userId)
+    myPrediction.value = res.data.data
+  } catch (e) { console.error(e) }
+}
+
+async function submitPrediction() {
+  if (!authStore.user || !predictionResult.value) return
+  submittingPrediction.value = true
+  try {
+    await predictionApi.make({
+      userId: authStore.user.userId,
+      matchId: matchId,
+      predictedResult: predictionResult.value
+    })
+    await fetchMyPrediction()
+    await fetchUserPoints()
+    predictionResult.value = ''
+  } catch (e: any) {
+    console.error(e)
+  } finally {
+    submittingPrediction.value = false
+  }
+}
 
 async function fetchPlayerRatings() {
   if (!selectedClubId.value) return
@@ -352,6 +526,176 @@ function loadMore() {
 
 <style scoped lang="scss">
 @use '@/styles/tokens' as *;
+
+.prediction-section {
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
+  padding: $space-5;
+  margin-top: $space-5;
+}
+
+.points-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: $space-1 $space-3;
+  border-radius: $radius-full;
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
+
+.my-prediction-card {
+  background: $surface-elevated;
+  border-radius: $radius-lg;
+  padding: $space-4;
+}
+
+.prediction-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prediction-result {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.prediction-label {
+  color: $text-muted;
+  font-size: $font-size-sm;
+}
+
+.prediction-value {
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.prediction-score {
+  color: $text-secondary;
+  font-size: $font-size-sm;
+}
+
+.prediction-status {
+  font-size: $font-size-sm;
+  font-weight: 500;
+
+  &.pending { color: #f59e0b; }
+  &.settled { color: #10b981; }
+}
+
+.prediction-form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.prediction-teams {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $space-3;
+  font-weight: 500;
+}
+
+.prediction-teams .vs {
+  color: $text-muted;
+  font-size: $font-size-sm;
+}
+
+.prediction-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.result-select {
+  display: flex;
+  justify-content: center;
+  gap: $space-4;
+}
+
+.score-inputs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $space-3;
+}
+
+.score-sep {
+  font-size: 18px;
+  font-weight: bold;
+  color: $text-secondary;
+}
+
+.match-events-section {
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
+  padding: $space-5;
+  margin-top: $space-5;
+}
+
+.events-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
+  background: $surface-elevated;
+
+  &.goal { border-left: 3px solid #10b981; }
+  &.penalty { border-left: 3px solid #f59e0b; }
+  &.own_goal { border-left: 3px solid #ef4444; }
+  &.yellow_card { border-left: 3px solid #eab308; }
+  &.red_card { border-left: 3px solid #ef4444; }
+  &.substitution { border-left: 3px solid #6366f1; }
+}
+
+.event-minute {
+  font-weight: bold;
+  color: $text-secondary;
+  min-width: 40px;
+  font-size: $font-size-sm;
+}
+
+.event-icon {
+  font-size: 18px;
+}
+
+.event-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.event-player {
+  font-weight: 500;
+  color: $text-primary;
+}
+
+.event-assist {
+  font-size: $font-size-xs;
+  color: $text-muted;
+}
+
+.event-type-label {
+  font-size: $font-size-xs;
+  color: $text-muted;
+}
+
+.event-team {
+  font-size: $font-size-sm;
+  color: $text-secondary;
+}
 
 .page-header {
   margin-bottom: $space-5;

@@ -61,6 +61,10 @@
                   <User class="dropdown-icon" />
                   <span>我的资料</span>
                 </el-dropdown-item>
+                <el-dropdown-item command="predictions" class="dropdown-item">
+                  <Aim class="dropdown-icon" />
+                  <span>我的竞猜</span>
+                </el-dropdown-item>
                 <el-dropdown-item command="admin" v-if="authStore.isSuperAdmin" class="dropdown-item">
                   <Setting class="dropdown-icon" />
                   <span>超级管理面板</span>
@@ -162,7 +166,7 @@ import { useRouter, useRoute } from 'vue-router'
 import {
   HomeFilled, Tickets, Timer, TrendCharts, DataLine,
   Document, ChatDotRound, Avatar, Setting,
-  User, Search, ArrowDown, SwitchButton
+  User, Search, ArrowDown, SwitchButton, Aim
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { matchApi } from '@/api'
@@ -222,6 +226,7 @@ function handleSearch() {
 function handleCommand(command: string) {
   switch (command) {
     case 'profile': router.push('/profile'); break
+    case 'predictions': router.push('/predictions'); break
     case 'admin': router.push('/admin'); break
     case 'club-admin': router.push('/club-admin'); break
     case 'logout':

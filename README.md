@@ -212,6 +212,46 @@
 - 实时显示最新评论
 - 支持删除自己的评论
 
+#### 5.5 球迷竞猜系统
+
+##### 5.5.1 积分制度
+
+- 每位用户初始拥有1000积分
+- 积分存储在用户表（SYS_USER.POINTS）
+- 猜对比赛结果可获得积分奖励
+- 积分实时更新，用户可查看当前积分
+
+##### 5.5.2 竞猜规则
+
+- 用户可对未开始的比赛进行竞猜
+- **竞猜选项**：仅支持胜/平/负（HOME_WIN/AWAY_WIN/DRAW）
+- 每个用户每场比赛只能提交一次竞猜
+- 竞猜提交后不可修改
+- 比赛开始后不可再进行竞猜
+
+##### 5.5.3 竞猜提交
+
+- 用户在比赛详情页面提交竞猜
+- 系统校验：比赛状态、是否已竞猜、积分余额
+- 竞猜结果：主队胜（HOME_WIN）、客队胜（AWAY_WIN）、平局（DRAW）
+
+##### 5.5.4 手动结算
+
+- 管理员在竞猜管理页面手动结算比赛
+- 结算条件：比赛已结束且有待开奖竞猜
+- 结算流程：
+  1. 根据比赛最终比分确定开奖结果
+  2. 遍历所有待开奖竞猜
+  3. 比对用户竞猜与开奖结果
+  4. 猜对用户获得积分奖励（100分）
+  5. 更新竞猜状态为已结算
+
+##### 5.5.5 竞猜历史
+
+- 用户可查看自己的全部竞猜记录
+- 包含比赛信息、竞猜选项、开奖结果、获得积分
+- 支持筛选：全部/待开奖/已结算
+
 ***
 
 ### 六、聊天室系统
@@ -487,9 +527,10 @@ soccer_community/
 │   │   │   ├── ChatController.java       # 聊天室：消息、发送、WebSocket
 │   │   │   ├── NewsController.java       # 新闻：列表、详情、爬取、评论
 │   │   │   ├── SocialController.java     # 社区：用户、关注、帖子、点赞、收藏
-│   │   │   ├── FollowController.java      # 俱乐部关注
+│   │   │   ├── FollowController.java     # 俱乐部关注
 │   │   │   ├── StandingsController.java  # 积分榜、射手榜、助攻榜
 │   │   │   ├── RatingController.java     # 评分：提交、查询、防刷
+│   │   │   ├── PredictionController.java # 竞猜：提交、结算、历史
 │   │   │   ├── AdminController.java      # 超级管理员：仪表盘、用户、字典、审计
 │   │   │   ├── ClubAdminController.java  # 俱乐部管理员：阵容、教练、转户管理
 │   │   │   ├── AnalyticsController.java  # 数据分析：导入导出Excel/CSV
@@ -507,16 +548,17 @@ soccer_community/
 │   │   │   ├── ChatService.java          # 聊天室业务
 │   │   │   ├── NewsService.java          # 新闻业务
 │   │   │   ├── NewsScraperService.java   # 新闻爬取业务
-│   │   │   ├── NewsCommentService.java  # 新闻评论业务
-│   │   │   ├── SocialService.java        # 社区业务
+│   │   │   ├── NewsCommentService.java   # 新闻评论业务
+│   │   │   ├── SocialService.java         # 社区业务
 │   │   │   ├── FollowService.java        # 关注业务
-│   │   │   ├── RatingService.java        # 评分业务
-│   │   │   ├── AdminService.java         # 管理员业务
-│   │   │   ├── ClubAdminService.java     # 俱乐部管理员业务
-│   │   │   ├── AnalyticsService.java     # 数据分析业务
-│   │   │   ├── AiChatService.java        # AI聊天业务
-│   │   │   └── FileUploadService.java    # 文件上传业务
-│   │   │   └── SeasonService.java        # 赛季管理业务
+│   │   │   ├── RatingService.java         # 评分业务
+│   │   │   ├── PredictionService.java    # 竞猜业务
+│   │   │   ├── AdminService.java          # 管理员业务
+│   │   │   ├── ClubAdminService.java      # 俱乐部管理员业务
+│   │   │   ├── AnalyticsService.java      # 数据分析业务
+│   │   │   ├── AiChatService.java         # AI聊天业务
+│   │   │   └── FileUploadService.java     # 文件上传业务
+│   │   │   └── SeasonService.java         # 赛季管理业务
 │   │   ├── mapper/                       # MyBatis Mapper接口
 │   │   │   ├── SysUserMapper.java        # 用户Mapper
 │   │   │   ├── ClubMapper.java           # 俱乐部Mapper
@@ -525,6 +567,7 @@ soccer_community/
 │   │   │   ├── MatchScheduleMapper.java  # 赛程Mapper
 │   │   │   ├── MatchPlayerRatingMapper.java # 评分Mapper
 │   │   │   ├── MatchCommentMapper.java   # 评论Mapper
+│   │   │   ├── MatchPredictionMapper.java # 竞猜Mapper
 │   │   │   ├── ClubChatMessageMapper.java # 聊天室消息Mapper
 │   │   │   ├── NewsArticleMapper.java    # 新闻Mapper
 │   │   │   ├── NewsCommentMapper.java    # 新闻评论Mapper
@@ -549,6 +592,7 @@ soccer_community/
 │   │   │   ├── MatchSchedule.java       # 赛程实体
 │   │   │   ├── MatchPlayerRating.java   # 球员评分实体
 │   │   │   ├── MatchComment.java        # 比赛评论实体
+│   │   │   ├── MatchPrediction.java     # 比赛竞猜实体
 │   │   │   ├── ClubChatMessage.java     # 聊天室消息实体
 │   │   │   ├── NewsArticle.java         # 新闻实体
 │   │   │   ├── NewsComment.java         # 新闻评论实体
@@ -612,7 +656,8 @@ soccer_community/
 │   │   │   ├── Chat.vue                # 聊天室组件（WebSocket）
 │   │   │   ├── FollowButton.vue        # 关注按钮组件
 │   │   │   ├── HubBot.vue              # AI助手组件
-│   │   │   └── ImageUpload.vue         # 图片上传组件
+│   │   │   ├── ImageUpload.vue         # 图片上传组件
+│   │   │   └── PredictionAdmin.vue     # 竞猜管理组件（管理员）
 │   │   ├── views/                       # 页面视图
 │   │   │   ├── Home.vue                # 首页
 │   │   │   ├── Login.vue               # 登录页
@@ -623,7 +668,8 @@ soccer_community/
 │   │   │   ├── PlayerDetail.vue        # 球员详情页
 │   │   │   ├── Rankings.vue            # 球员评分榜
 │   │   │   ├── Matches.vue             # 赛程页面
-│   │   │   ├── MatchDetail.vue         # 比赛详情页
+│   │   │   ├── MatchDetail.vue         # 比赛详情页（含竞猜入口）
+│   │   │   ├── PredictionHistory.vue   # 竞猜历史页面
 │   │   │   ├── Standings.vue           # 积分榜页面
 │   │   │   ├── News.vue                # 新闻列表页
 │   │   │   ├── NewsDetail.vue          # 新闻详情页
@@ -659,9 +705,11 @@ soccer_community/
 │       ├── update_player_stats*.sql     # 球员统计更新脚本
 │       ├── add_match_event.sql          # 比赛事件表
 │       ├── add_standings_triggers.sql   # 积分榜触发器
-│       ├── create_season_table.sql      # 赛季管理表
+│       ├── create_season_table.sql       # 赛季管理表
 │       ├── seed_seasons.sql             # 赛季初始数据
-│       └── database_compatible.sql    # 数据库优化脚本（索引、视图、序列）
+│       ├── prediction_tables.sql        # 竞猜功能表（MATCH_PREDICTION）
+│       ├── add_column.sql               # 新增字段（ACTUAL_RESULT等）
+│       └── database_compatible.sql      # 数据库优化脚本（索引、视图、序列）
 │
 ├── docker-compose.yml                    # Docker编排（Oracle数据库）
 └── README.md
@@ -805,7 +853,7 @@ server {
 
 ## 核心数据库说明
 
-### 核心数据表（33个）
+### 核心数据表（34个）
 
 | 序号 | 表名 | 说明 |
 |------|------|------|
@@ -842,6 +890,7 @@ server {
 | 31 | SYSTEM_CONFIG | 系统配置表 |
 | 32 | USER_NOTIFICATION | 用户通知表 |
 | 33 | SEASON | 赛季管理表 |
+| 34 | MATCH_PREDICTION | 比赛预测表 |
 
 ### 存储过程
 
@@ -905,7 +954,8 @@ server {
 | CLUB\_HONOR            | SYS\_C008468\~470                                                                                                                                                           |
 | COACH                  | IDX\_COACH\_CLUB, IDX\_COACH\_LEAGUE, SYS\_C008476\~478                                                                                                                     |
 | MATCH\_COMMENT         | IDX\_MATCH\_COMMENT\_MATCH, IDX\_MATCH\_COMMENT\_TIME, IDX\_MATCH\_COMMENT\_USER                                                                                            |
-| MATCH\_EVENT           | IDX\_EVENT\_MATCH, IDX\_EVENT\_PLAYER, IDX\_EVENT\_TYPE                                                                                                                     |
+| MATCH_EVENT           | IDX\_EVENT\_MATCH, IDX\_EVENT\_PLAYER, IDX\_EVENT\_TYPE                                                                                                                     |
+| MATCH_PREDICTION      | IDX\_PREDICTION\_USER, IDX\_PREDICTION\_MATCH, IDX\_PREDICTION\_STATUS                                                                                                    |
 | MATCH\_SCHEDULE        | IDX\_MATCH\_AWAY\_CLUB, IDX\_MATCH\_HOME\_CLUB, IDX\_MATCH\_LEAGUE, IDX\_MATCH\_LEAGUE\_SEASON, IDX\_MATCH\_ROUND, IDX\_MATCH\_SEASON, IDX\_MATCH\_STATUS, IDX\_MATCH\_TIME |
 | NEWS\_ARTICLE          | IDX\_NEWS\_AUTHOR, IDX\_NEWS\_CLUB, IDX\_NEWS\_PUBLISHED, IDX\_NEWS\_TITLE                                                                                                  |
 | NEWS\_COMMENT          | IDX\_NEWS\_COMMENT\_ARTICLE, IDX\_NEWS\_COMMENT\_TIME, IDX\_NEWS\_COMMENT\_USER                                                                                             |
@@ -1155,7 +1205,20 @@ http://localhost:8080/api/swagger-ui.html
 | POST | /api/standings              | 创建/更新积分 |
 | GET  | /api/standings/scorers      | 射手榜     |
 | GET  | /api/standings/assists      | 助攻榜     |
-| GET  | /api/standings/yellow-cards | 黄牌榜     |
+
+### 竞猜模块
+
+| 方法     | 端点                                    | 说明        |
+| ------ | ------------------------------------- | --------- |
+| POST   | /api/predictions                      | 提交竞猜       |
+| GET    | /api/predictions/match/{matchId}      | 获取用户竞猜    |
+| GET    | /api/predictions/user/{userId}        | 获取用户全部竞猜  |
+| GET    | /api/predictions/user/{userId}/with-match | 获取用户竞猜（含比赛信息） |
+| GET    | /api/predictions/user/{userId}/points | 获取用户积分    |
+| GET    | /api/predictions/match/{matchId}/all  | 获取比赛全部竞猜（管理员） |
+| GET    | /api/predictions/pending              | 获取待开奖竞猜（管理员） |
+| POST   | /api/predictions/settle/{matchId}     | 结算比赛（管理员）  |
+| GET    | /api/predictions/admin/settled-matches | 获取可结算比赛（管理员） |
 
 ### 管理后台（SUPER\_ADMIN）
 
