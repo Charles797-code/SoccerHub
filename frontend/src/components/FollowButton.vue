@@ -2,9 +2,9 @@
   <div class="follow-button-container">
     <AppButton
       v-if="isLoggedIn"
-      :type="isFollowing ? 'default' : 'primary'"
+      :type="isFollowing ? 'secondary' : 'primary'"
       :loading="loading"
-      size="medium"
+      size="md"
       @click="handleFollow"
     >
       {{ isFollowing ? '已关注' : '关注' }}
@@ -13,7 +13,7 @@
       v-else
       type="primary"
       @click="goToLogin"
-      size="medium"
+      size="md"
     >
       登录后关注
     </AppButton>

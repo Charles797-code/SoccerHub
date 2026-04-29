@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 import router from '@/router'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -129,6 +129,8 @@ export const matchApi = {
     api.get('/matches', { params }),
   getById: (id: string) =>
     api.get(`/matches/${id}`),
+  getEvents: (id: string) =>
+    api.get(`/matches/${id}/events`),
   getToday: () =>
     api.get('/matches/today'),
   getLive: () =>
@@ -139,6 +141,19 @@ export const matchApi = {
     api.post('/matches/upsert', data),
   delete: (matchId: string) =>
     api.delete(`/matches/${matchId}`)
+}
+
+export const predictionApi = {
+  make: (data: any) =>
+    api.post('/predictions', null, { params: data }),
+  getForMatch: (matchId: string, userId: number) =>
+    api.get(`/predictions/match/${matchId}`, { params: { userId } }),
+  getUserPredictions: (userId: number) =>
+    api.get(`/predictions/user/${userId}`),
+  getUserPredictionsWithMatch: (userId: number) =>
+    api.get(`/predictions/user/${userId}/with-match`),
+  getUserPoints: (userId: number) =>
+    api.get(`/predictions/user/${userId}/points`)
 }
 
 export const ratingApi = {
@@ -302,14 +317,14 @@ export const uploadApi = {
   uploadImage: (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/upload/image', formData, {
+    return api.post('/api/upload/image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
   },
   deleteImage: (path: string) =>
-    api.delete('/upload/image', { params: { path } })
+    api.delete('/api/upload/image', { params: { path } })
 }
 
 export const analyticsApi = {
@@ -353,4 +368,21 @@ export const socialApi = {
     api.post(`/social/posts/${postId}/comments`, data),
   deleteComment: (commentId: number) =>
     api.delete(`/social/comments/${commentId}`)
+}
+
+export const seasonApi = {
+  getAll: () =>
+    api.get('/seasons'),
+  getActive: () =>
+    api.get('/seasons/active'),
+  getByLeague: (league: string) =>
+    api.get(`/seasons/league/${encodeURIComponent(league)}`),
+  getActiveByLeague: (league: string) =>
+    api.get(`/seasons/active/${encodeURIComponent(league)}`),
+  startNew: (data: { league: string, seasonName: string, totalRounds: number }) =>
+    api.post('/seasons/start-new', data),
+  resetSeason: (league: string) =>
+    api.post(`/seasons/reset/${encodeURIComponent(league)}`),
+  finishSeason: (league: string) =>
+    api.put(`/seasons/finish/${encodeURIComponent(league)}`)
 }

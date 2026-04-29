@@ -16,7 +16,7 @@
             prefix-icon="Lock" show-password @keyup.enter="handleLogin" />
         </el-form-item>
 
-        <AppButton type="primary" size="large" :loading="loading" block @click="handleLogin">
+        <AppButton type="primary" size="lg" :loading="loading" block @click="handleLogin">
           登录
         </AppButton>
       </el-form>
@@ -97,89 +97,30 @@ async function handleLogin() {
 </script>
 
 <style scoped lang="scss">
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: #f5f5f5;
-}
+@use '@/styles/tokens' as *;
 
-.login-card {
-  width: 100%;
-  max-width: 400px;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 36px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 28px;
-
+.page-header {
   h1 {
-    font-size: 26px;
-    font-weight: 700;
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    letter-spacing: $letter-spacing-tight;
     margin: 0;
-    color: #262626;
-    letter-spacing: -0.3px;
   }
-
-  p {
-    color: #737373;
-    margin: 8px 0 0;
-    font-size: 14px;
-  }
-}
-
-.login-footer {
-  text-align: center;
-  margin-top: 20px;
-  color: #737373;
-  font-size: 14px;
-
-  a {
-    color: #1a56db;
-    margin-left: 4px;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-.demo-hint {
-  margin-top: 20px;
-}
-
-.demo-accounts {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-5;
 }
 
-.demo-tag {
-  cursor: pointer;
-  display: flex;
-  gap: 6px;
-  padding: 6px 12px;
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  .demo-role {
-    font-weight: 600;
-  }
-}
-
-.demo-note {
+.empty-state {
   text-align: center;
-  color: #a3a3a3;
-  font-size: 12px;
-  margin: 8px 0 0;
+  padding: $space-12 $space-4;
+  color: $text-muted;
+  font-size: $font-size-base;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
 }
 </style>

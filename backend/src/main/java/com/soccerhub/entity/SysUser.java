@@ -20,6 +20,7 @@ public class SysUser {
     private Long managedClubId;
     private String bio;
     private Long favoriteClubId;
+    private Integer points;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;

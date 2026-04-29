@@ -86,6 +86,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/Profile.vue')
       },
       {
+        path: 'predictions',
+        name: 'PredictionHistory',
+        component: () => import('@/views/PredictionHistory.vue')
+      },
+      {
         path: 'community',
         name: 'Community',
         component: () => import('@/views/Community.vue')

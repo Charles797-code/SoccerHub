@@ -2,131 +2,152 @@
   <div class="layout">
     <!-- Top Navigation -->
     <header class="top-nav">
-      <div class="nav-brand">
+      <div class="nav-inner">
+        <!-- Brand -->
         <router-link to="/" class="logo-link">
+          <div class="logo-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <circle cx="14" cy="14" r="13" stroke="url(#logoGrad)" stroke-width="2"/>
+              <path d="M14 5C14 5 8 9 8 14.5C8 17.5 10.5 20 14 20C17.5 20 20 17.5 20 14.5C20 9 14 5 14 5Z" fill="url(#logoGrad)" opacity="0.9"/>
+              <path d="M5 14C5 14 8 10 14 10C20 10 23 14 23 14" stroke="url(#logoGrad)" stroke-width="1.5" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
+                  <stop stop-color="#7c3aed"/>
+                  <stop offset="1" stop-color="#fbbf24"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
           <span class="logo-text">Soccer<span class="logo-highlight">Hub</span></span>
         </router-link>
-      </div>
-      <div class="nav-search">
-        <el-input v-model="searchKeyword" placeholder="搜索俱乐部、球员..." size="default" clearable
-          @keyup.enter="handleSearch">
-          <template #prefix>
-            <el-icon>
-              <Search />
-            </el-icon>
-          </template>
-        </el-input>
-      </div>
-      <div class="nav-actions">
-        <el-dropdown @command="handleCommand">
-          <span class="user-info">
-            <el-avatar :size="32">{{ user?.nickname?.charAt(0) || 'U' }}</el-avatar>
-            <span class="username">{{ user?.nickname }}</span>
-            <el-icon class="el-icon--right">
-              <ArrowDown />
-            </el-icon>
-          </span>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="profile">
-                <el-icon>
-                  <User />
-                </el-icon>
-                我的资料
-              </el-dropdown-item>
-              <el-dropdown-item command="admin" v-if="authStore.isSuperAdmin">
-                <el-icon>
-                  <Setting />
-                </el-icon>
-                超级管理面板
-              </el-dropdown-item>
-              <el-dropdown-item command="club-admin" v-if="authStore.isClubAdmin && !authStore.isSuperAdmin">
-                <el-icon>
-                  <Setting />
-                </el-icon>
-                俱乐部管理
-              </el-dropdown-item>
-              <el-dropdown-item command="logout" divided>
-                <el-icon>
-                  <SwitchButton />
-                </el-icon>
-                退出登录
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+
+        <!-- Search -->
+        <div class="nav-search">
+          <el-input
+            v-model="searchKeyword"
+            placeholder="搜索俱乐部、球员..."
+            size="default"
+            clearable
+            class="search-input"
+            @keyup.enter="handleSearch"
+          >
+            <template #prefix>
+              <Search class="search-icon" />
+            </template>
+          </el-input>
+        </div>
+
+        <!-- Actions -->
+        <div class="nav-actions">
+          <!-- Live indicator -->
+          <div v-if="hasLiveMatches" class="live-indicator" @click="router.push('/matches')">
+            <span class="live-dot"></span>
+            <span class="live-text">直播中</span>
+          </div>
+
+          <!-- User -->
+          <el-dropdown trigger="click" @command="handleCommand">
+            <button class="user-btn" type="button">
+              <div class="user-avatar">
+                <img v-if="user?.avatarUrl" :src="getImageUrl(user.avatarUrl)" :alt="user.nickname" />
+                <span v-else>{{ user?.nickname?.charAt(0) || 'U' }}</span>
+              </div>
+              <span class="user-name">{{ user?.nickname || '游客' }}</span>
+              <el-icon class="chevron"><ArrowDown /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu class="nav-dropdown">
+                <el-dropdown-item command="profile" class="dropdown-item">
+                  <User class="dropdown-icon" />
+                  <span>我的资料</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="predictions" class="dropdown-item">
+                  <Aim class="dropdown-icon" />
+                  <span>我的竞猜</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="admin" v-if="authStore.isSuperAdmin" class="dropdown-item">
+                  <Setting class="dropdown-icon" />
+                  <span>超级管理面板</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="club-admin" v-if="authStore.isClubAdmin && !authStore.isSuperAdmin" class="dropdown-item">
+                  <Setting class="dropdown-icon" />
+                  <span>俱乐部管理</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="logout" divided class="dropdown-item dropdown-item--danger">
+                  <SwitchButton class="dropdown-icon" />
+                  <span>退出登录</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
       </div>
     </header>
 
+    <!-- Page Layout -->
     <div class="page-layout">
       <!-- Sidebar -->
       <aside class="sidebar">
-        <div class="nav-item" :class="{ active: $route.path === '/' }" @click="$router.push('/')">
-          <el-icon>
-            <HomeFilled />
-          </el-icon>
-          <span>首页</span>
+        <div class="sidebar-inner">
+          <nav class="nav-list">
+            <div
+              v-for="item in navItems"
+              :key="item.path"
+              class="nav-item"
+              :class="{ active: isActive(item.path) }"
+              @click="router.push(item.path)"
+              role="button"
+              tabindex="0"
+              @keydown.enter="router.push(item.path)"
+            >
+              <div class="nav-item-bg"></div>
+              <el-icon class="nav-icon">
+                <component :is="item.icon" />
+              </el-icon>
+              <span class="nav-label">{{ item.label }}</span>
+              <span v-if="item.badge" class="nav-badge">{{ item.badge }}</span>
+            </div>
+          </nav>
+
+          <div class="sidebar-footer">
+            <div class="divider-line"></div>
+            <div
+              class="nav-item nav-item--sub"
+              :class="{ active: isProfileActive }"
+              @click="router.push('/profile')"
+              role="button"
+              tabindex="0"
+              @keydown.enter="router.push('/profile')"
+            >
+              <el-icon class="nav-icon"><Avatar /></el-icon>
+              <span class="nav-label">个人中心</span>
+            </div>
+            <div
+              v-if="authStore.isSuperAdmin"
+              class="nav-item nav-item--sub"
+              :class="{ active: $route.path === '/admin' }"
+              @click="router.push('/admin')"
+              role="button"
+              tabindex="0"
+              @keydown.enter="router.push('/admin')"
+            >
+              <el-icon class="nav-icon"><Setting /></el-icon>
+              <span class="nav-label">管理后台</span>
+            </div>
+            <div
+              v-if="authStore.isClubAdmin && !authStore.isSuperAdmin"
+              class="nav-item nav-item--sub"
+              :class="{ active: $route.path === '/club-admin' }"
+              @click="router.push('/club-admin')"
+              role="button"
+              tabindex="0"
+              @keydown.enter="router.push('/club-admin')"
+            >
+              <el-icon class="nav-icon"><Setting /></el-icon>
+              <span class="nav-label">俱乐部管理</span>
+            </div>
+          </div>
         </div>
-        <div class="nav-item" :class="{ active: $route.path === '/clubs' }" @click="$router.push('/clubs')">
-          <el-icon>
-            <Tickets />
-          </el-icon>
-          <span>俱乐部</span>
-        </div>
-        <div class="nav-item" :class="{ active: $route.path === '/matches' }" @click="$router.push('/matches')">
-          <el-icon>
-            <Timer />
-          </el-icon>
-          <span>赛程</span>
-        </div>
-        <div class="nav-item" :class="{ active: $route.path === '/rankings' }"
-          @click="$router.push('/rankings')">
-          <el-icon>
-            <TrendCharts />
-          </el-icon>
-          <span>排行榜</span>
-        </div>
-        <div class="nav-item" :class="{ active: $route.path === '/standings' }"
-          @click="$router.push('/standings')">
-          <el-icon>
-            <DataLine />
-          </el-icon>
-          <span>积分榜</span>
-        </div>
-        <div class="nav-item" :class="{ active: $route.path === '/news' }" @click="$router.push('/news')">
-          <el-icon>
-            <Document />
-          </el-icon>
-          <span>资讯</span>
-        </div>
-        <div class="nav-item" :class="{ active: $route.path === '/community' }" @click="$router.push('/community')">
-          <el-icon>
-            <ChatDotRound />
-          </el-icon>
-          <span>社区</span>
-        </div>
-        <div class="nav-divider"></div>
-        <div class="nav-item" :class="{ active: $route.path === '/profile' }" @click="$router.push('/profile')">
-          <el-icon>
-            <Avatar />
-          </el-icon>
-          <span>个人中心</span>
-        </div>
-        <div class="nav-item" v-if="authStore.isSuperAdmin"
-          :class="{ active: $route.path === '/admin' }" @click="$router.push('/admin')">
-          <el-icon>
-            <Setting />
-          </el-icon>
-          <span>超级管理后台</span>
-        </div>
-        <div class="nav-item" v-if="authStore.isClubAdmin && !authStore.isSuperAdmin"
-          :class="{ active: $route.path === '/club-admin' }" @click="$router.push('/club-admin')">
-          <el-icon>
-            <Setting />
-          </el-icon>
-          <span>俱乐部管理</span>
-        </div>
-        <div class="sidebar-bg"></div>
       </aside>
 
       <!-- Main Content -->
@@ -134,28 +155,66 @@
         <router-view />
       </main>
     </div>
+
     <HubBot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, markRaw } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import {
+  HomeFilled, Tickets, Timer, TrendCharts, DataLine,
+  Document, ChatDotRound, Avatar, Setting,
+  User, Search, ArrowDown, SwitchButton, Aim
+} from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
-import { ElMessage } from 'element-plus'
+import { matchApi } from '@/api'
 import HubBot from '@/components/HubBot.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
+
 const searchKeyword = ref('')
+const hasLiveMatches = ref(false)
 
 const user = computed(() => authStore.user)
 
-onMounted(() => {
+const navItems: Array<{ path: string; label: string; icon: any; badge?: string }> = [
+  { path: '/', label: '首页', icon: markRaw(HomeFilled) },
+  { path: '/clubs', label: '俱乐部', icon: markRaw(Tickets) },
+  { path: '/matches', label: '赛程', icon: markRaw(Timer) },
+  { path: '/rankings', label: '排行榜', icon: markRaw(TrendCharts) },
+  { path: '/standings', label: '积分榜', icon: markRaw(DataLine) },
+  { path: '/news', label: '资讯', icon: markRaw(Document) },
+  { path: '/community', label: '社区', icon: markRaw(ChatDotRound) },
+]
+
+const isProfileActive = computed(() => route.path === '/profile')
+const isAdminActive = computed(() => route.path === '/admin' || route.path === '/club-admin')
+
+function isActive(path: string) {
+  if (path === '/') return route.path === '/'
+  return route.path.startsWith(path)
+}
+
+function getImageUrl(path: string) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  if (path.startsWith('/uploads/')) return path
+  return '/uploads/' + path.replace(/^\//, '')
+}
+
+onMounted(async () => {
   authStore.initAuth()
   if (authStore.isLoggedIn && !authStore.user) {
     authStore.fetchProfile()
   }
+  try {
+    const res = await matchApi.getLive()
+    hasLiveMatches.value = (res.data.data?.length || 0) > 0
+  } catch { /* ignore */ }
 })
 
 function handleSearch() {
@@ -166,18 +225,12 @@ function handleSearch() {
 
 function handleCommand(command: string) {
   switch (command) {
-    case 'profile':
-      router.push('/profile')
-      break
-    case 'admin':
-      router.push('/admin')
-      break
-    case 'club-admin':
-      router.push('/club-admin')
-      break
+    case 'profile': router.push('/profile'); break
+    case 'predictions': router.push('/predictions'); break
+    case 'admin': router.push('/admin'); break
+    case 'club-admin': router.push('/club-admin'); break
     case 'logout':
       authStore.logout()
-      ElMessage.success('已退出登录')
       router.push('/login')
       break
   }
@@ -185,80 +238,258 @@ function handleCommand(command: string) {
 </script>
 
 <style scoped lang="scss">
+@use '@/styles/tokens' as *;
+
+// --------------------------------------------------------------------------
+// Layout Root
+// --------------------------------------------------------------------------
+
 .layout {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background: $surface-dark;
+}
+
+// --------------------------------------------------------------------------
+// Top Navigation
+// --------------------------------------------------------------------------
+
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky;
+  height: $header-height;
+  @include glass-surface(0.75);
+  border-bottom: 1px solid $border-subtle;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 0 0 rgba($purple-primary, 0.08);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 $space-6;
+  gap: $space-6;
+  max-width: 100%;
+}
+
+// Logo
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 8px rgba($purple-primary, 0.4));
+}
+
+.logo-text {
+  font-family: $font-display;
+  font-size: 20px;
+  font-weight: $font-weight-bold;
+  color: $text-primary;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.logo-highlight {
+  @include text-gradient($gold-bright, $gold-dark);
+}
+
+// Search
+.nav-search {
+  flex: 1;
+  max-width: 380px;
+}
+
+.search-input {
+  :deep(.el-input__wrapper) {
+    background: rgba($surface-card, 0.6) !important;
+    border: 1px solid $border-default !important;
+    border-radius: $radius-full !important;
+    padding: 2px $space-4 !important;
+    transition: all $duration-normal $ease-out;
+
+    &:hover {
+      border-color: rgba($purple-primary, 0.5) !important;
+      background: rgba($surface-card, 0.8) !important;
+    }
+
+    &.is-focus {
+      border-color: $purple-primary !important;
+      box-shadow: 0 0 0 3px rgba($purple-primary, 0.15), 0 0 12px rgba($purple-primary, 0.1) !important;
+      background: rgba($surface-card, 0.9) !important;
+    }
+  }
+
+  :deep(.el-input__inner) {
+    color: $text-primary !important;
+    font-size: $font-size-base;
+
+    &::placeholder {
+      color: $text-muted !important;
+    }
+  }
+}
+
+.search-icon {
+  width: 16px;
+  height: 16px;
+  color: $text-muted;
+}
+
+// Actions
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  margin-left: auto;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-1 $space-3;
+  background: rgba($danger, 0.12);
+  border: 1px solid rgba($danger, 0.25);
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: all $duration-fast $ease-out;
+
+  &:hover {
+    background: rgba($danger, 0.18);
+    border-color: rgba($danger, 0.4);
+  }
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: $danger;
+  border-radius: $radius-full;
+  animation: livePulse 2s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba($danger, 0.8);
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+.live-text {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $danger-light;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-1 $space-3 $space-1 $space-1;
+  background: rgba($surface-card, 0.5);
+  border: 1px solid $border-default;
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: all $duration-fast $ease-out;
+  @include focus-ring;
+
+  &:hover {
+    background: rgba($surface-card, 0.8);
+    border-color: rgba($purple-primary, 0.4);
+  }
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-full;
+  background: linear-gradient(135deg, $purple-primary, $gold-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $text-primary;
+  overflow: hidden;
+  border: 1.5px solid rgba($purple-light, 0.3);
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.user-name {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $text-primary;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+  color: $text-muted;
+  transition: transform $duration-fast $ease-out;
+}
+
+.nav-dropdown {
+  background: $surface-mid !important;
+  border: 1px solid $border-default !important;
+  border-radius: $radius-lg !important;
+  box-shadow: $shadow-xl !important;
+  padding: $space-1 0 !important;
+  min-width: 200px !important;
   overflow: hidden;
 }
 
-.top-nav {
-  height: 60px;
-  background: var(--el-bg-color-overlay);
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  gap: 24px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid var(--el-border-color-light);
-
-  .nav-brand {
-    font-size: 20px;
-    font-weight: 700;
-    white-space: nowrap;
-
-    .logo-link {
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-    }
-
-    .logo-text {
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--el-text-color-primary);
-    }
-
-    .logo-highlight {
-      color: var(--el-color-primary);
-    }
-  }
-
-  .nav-search {
-    flex: 1;
-    max-width: 400px;
-    margin-left: 20px;
-  }
-
-  .nav-actions {
-    margin-left: auto;
-  }
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: all 0.2s;
+.dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: $space-3 !important;
+  padding: $space-2 $space-4 !important;
+  font-size: $font-size-base !important;
+  color: $text-primary !important;
+  transition: all $duration-fast $ease-out !important;
+  border-radius: 0 !important;
 
   &:hover {
-    background: var(--el-color-primary-light-9);
+    background: rgba($purple-primary, 0.12) !important;
+    color: $purple-light !important;
   }
 
-  .username {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--el-text-color-regular);
+  &--danger:hover {
+    background: rgba($danger, 0.12) !important;
+    color: $danger-light !important;
   }
 }
+
+.dropdown-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+// --------------------------------------------------------------------------
+// Page Layout
+// --------------------------------------------------------------------------
 
 .page-layout {
   display: flex;
@@ -266,69 +497,179 @@ function handleCommand(command: string) {
   overflow: hidden;
 }
 
+// --------------------------------------------------------------------------
+// Sidebar
+// --------------------------------------------------------------------------
+
 .sidebar {
-  width: 240px;
-  background: var(--el-bg-color-overlay);
-  border-right: 1px solid var(--el-border-color-light);
-  padding-top: 20px;
+  width: $sidebar-width;
   flex-shrink: 0;
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  @include glass-surface(0.4);
+  border-right: 1px solid $border-subtle;
+  position: sticky;
+  top: $header-height;
+  height: calc(100vh - $header-height);
   overflow-y: auto;
   overflow-x: hidden;
-  z-index: 1;
 }
 
-.sidebar-bg {
-  margin-top: auto;
-  width: 100%;
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: $space-3 0;
+}
+
+.nav-list {
   flex: 1;
-  min-height: 400px;
-  background-image: url('@/assets/Gemini_Generated_Image_ltf5rfltf5rfltf5.png');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+  padding: 0 $space-2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .nav-item {
-  padding: 12px 16px;
-  margin: 4px 16px;
-  border-radius: 8px;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $space-3;
+  padding: $space-3 $space-3;
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--el-text-color-regular);
-  font-size: 14px;
-  font-weight: 500;
+  transition: all $duration-normal $ease-out;
+  overflow: hidden;
+  user-select: none;
+
+  &-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: $radius-md;
+    opacity: 0;
+    transition: opacity $duration-normal $ease-out;
+    background: linear-gradient(
+      90deg,
+      rgba($purple-primary, 0.2) 0%,
+      rgba($purple-primary, 0.08) 100%
+    );
+    border: 1px solid rgba($purple-primary, 0.15);
+  }
 
   &:hover {
-    background: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-    transform: translateX(4px);
+    .nav-item-bg { opacity: 0.6; }
+    .nav-icon { color: $purple-light; transform: scale(1.05); }
+    .nav-label { color: $text-primary; }
   }
 
   &.active {
-    background: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-    font-weight: 600;
+    .nav-item-bg { opacity: 1; }
+    .nav-icon {
+      color: $purple-primary;
+      filter: drop-shadow(0 0 6px rgba($purple-primary, 0.6));
+    }
+    .nav-label {
+      color: $text-primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  &--sub {
+    margin-top: 2px;
   }
 }
 
-.nav-divider {
-  height: 1px;
-  background: var(--el-border-color-light);
-  margin: 16px 24px;
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  color: $text-muted;
+  flex-shrink: 0;
+  transition: all $duration-normal $ease-spring;
+  position: relative;
+  z-index: 1;
 }
+
+.nav-label {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+  position: relative;
+  z-index: 1;
+  transition: color $duration-fast $ease-out;
+}
+
+.nav-badge {
+  margin-left: auto;
+  padding: 1px 6px;
+  background: rgba($danger, 0.15);
+  color: $danger-light;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  border-radius: $radius-full;
+  border: 1px solid rgba($danger, 0.25);
+  position: relative;
+  z-index: 1;
+}
+
+// --------------------------------------------------------------------------
+// Sidebar Footer
+// --------------------------------------------------------------------------
+
+.sidebar-footer {
+  padding: 0 $space-2;
+  margin-top: auto;
+}
+
+.divider-line {
+  height: 1px;
+  background: $border-subtle;
+  margin: $space-2 $space-1 $space-2;
+}
+
+// --------------------------------------------------------------------------
+// Main Content
+// --------------------------------------------------------------------------
 
 .main-content {
   flex: 1;
   overflow-y: auto;
-  background: var(--el-bg-color);
+  min-width: 0;
+  background: $surface-dark;
+
+  // Subtle background pattern
+  &::before {
+    content: '';
+    position: fixed;
+    top: $header-height;
+    left: $sidebar-width;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba($purple-primary, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba($gold-dark, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// --------------------------------------------------------------------------
+// Reduced Motion
+// --------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+
+  .nav-item {
+    transition: none;
+  }
+
+  .user-btn, .search-input :deep(.el-input__wrapper) {
+    transition: none;
+  }
 }
 </style>

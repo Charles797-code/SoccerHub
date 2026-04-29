@@ -23,6 +23,7 @@ import java.util.List;
 public class ClubController {
 
     private final ClubService clubService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @GetMapping
     @Operation(summary = "List all clubs (paginated)")
@@ -94,5 +95,16 @@ public class ClubController {
     public ResponseEntity<ApiResponse<Void>> deleteClub(@PathVariable Long id) {
         clubService.deleteClub(id);
         return ResponseEntity.ok(ApiResponse.success("Club deleted", null));
+    }
+
+    @PostMapping("/fix-svg")
+    @Operation(summary = "Fix SVG club logo paths")
+    public ResponseEntity<ApiResponse<String>> fixSvgPaths() {
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_1.svg' WHERE CLUB_ID = 1 AND LOGO_URL = '/uploads/clubs/club_1.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_2.svg' WHERE CLUB_ID = 2 AND LOGO_URL = '/uploads/clubs/club_2.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_3.svg' WHERE CLUB_ID = 3 AND LOGO_URL = '/uploads/clubs/club_3.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_11.svg' WHERE CLUB_ID = 11 AND LOGO_URL = '/uploads/clubs/club_11.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_17.svg' WHERE CLUB_ID = 17 AND LOGO_URL = '/uploads/clubs/club_17.png'");
+        return ResponseEntity.ok(ApiResponse.success("SVG paths fixed", null));
     }
 }

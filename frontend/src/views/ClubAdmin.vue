@@ -44,7 +44,7 @@
             <el-button type="primary" @click="fetchPlayers">搜索</el-button>
             <el-button type="success" @click="openPlayerDialog()">新增球员</el-button>
           </div>
-          <el-table :data="players" stripe>
+          <el-table :data="players">
             <el-table-column prop="playerId" label="ID" width="70" />
             <el-table-column prop="nameCn" label="中文名" width="100" />
             <el-table-column prop="name" label="英文名" width="120" />
@@ -87,7 +87,7 @@
             </el-select>
             <el-button type="success" @click="openCoachDialog()">新增教练</el-button>
           </div>
-          <el-table :data="filteredCoaches" stripe>
+          <el-table :data="filteredCoaches">
             <el-table-column prop="coachId" label="ID" width="70" />
             <el-table-column prop="nameCn" label="中文名" width="100" />
             <el-table-column prop="name" label="英文名" width="130" />
@@ -509,17 +509,41 @@ async function handleDeleteCoach(coachId: number) {
 </script>
 
 <style scoped lang="scss">
+@use '@/styles/tokens' as *;
+
 .admin-tabs {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  .el-tabs--border-card {
+    background: $surface-card;
+    border: 1px solid $border-subtle;
+    border-radius: $radius-xl;
+    overflow: hidden;
+  }
+
+  // Fix table body white bg
+  :deep(.el-table) {
+    background: $surface-card !important;
+  }
+
+  :deep(.el-table__body-wrapper),
+  :deep(.el-table__body),
+  :deep(.el-table__row),
+  :deep(.el-table__empty-block) {
+    background: transparent !important;
+  }
+
+  :deep(.el-table__row td) {
+    background: transparent !important;
+  }
+
+  :deep(.el-table__cell) {
+    background: transparent !important;
+  }
 }
 
 .toolbar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: $space-3;
+  margin-bottom: $space-4;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -527,14 +551,14 @@ async function handleDeleteCoach(coachId: number) {
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: $space-5;
 }
 
 .club-info-section {
   .club-actions {
-    margin-top: 20px;
+    margin-top: $space-5;
     display: flex;
-    gap: 10px;
+    gap: $space-3;
   }
 }
 </style>

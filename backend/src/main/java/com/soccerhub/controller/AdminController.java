@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,6 @@ import java.util.Map;
 @PreAuthorize("hasRole('SUPER_ADMIN')")
 @Tag(name = "Admin", description = "Super admin endpoints")
 public class AdminController {
-
     private final AdminService adminService;
     private final MatchService matchService;
     private final PlayerService playerService;
@@ -36,6 +36,7 @@ public class AdminController {
     private final TransferHistoryLogMapper transferLogMapper;
     private final PlayerMapper playerMapper;
     private final ClubMapper clubMapper;
+    private final JdbcTemplate jdbcTemplate;
 
     @GetMapping("/dashboard/stats")
     @Operation(summary = "Get dashboard statistics")
@@ -295,5 +296,16 @@ public class AdminController {
     @Operation(summary = "Get events for a match")
     public ResponseEntity<ApiResponse<List<MatchEvent>>> getMatchEvents(@PathVariable String matchId) {
         return ResponseEntity.ok(ApiResponse.success(matchEventService.getMatchEvents(matchId)));
+    }
+
+    @PostMapping("/fix-svg-paths")
+    @Operation(summary = "Fix SVG club logo paths")
+    public ResponseEntity<ApiResponse<String>> fixSvgPaths() {
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_1.svg' WHERE CLUB_ID = 1 AND LOGO_URL = '/uploads/clubs/club_1.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_2.svg' WHERE CLUB_ID = 2 AND LOGO_URL = '/uploads/clubs/club_2.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_3.svg' WHERE CLUB_ID = 3 AND LOGO_URL = '/uploads/clubs/club_3.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_11.svg' WHERE CLUB_ID = 11 AND LOGO_URL = '/uploads/clubs/club_11.png'");
+        jdbcTemplate.execute("UPDATE CLUB SET LOGO_URL = '/uploads/clubs/club_17.svg' WHERE CLUB_ID = 17 AND LOGO_URL = '/uploads/clubs/club_17.png'");
+        return ResponseEntity.ok(ApiResponse.success("SVG paths fixed", null));
     }
 }

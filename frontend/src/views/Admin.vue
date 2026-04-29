@@ -8,7 +8,7 @@
       <el-tabs v-model="activeTab" type="border-card">
         <el-tab-pane label="分析统计" name="stats">
           <div v-if="analytics" class="analytics-section">
-            <h3 style="margin:0 0 14px;font-size:16px;color:#333">总览</h3>
+            <h3 style="margin:0 0 14px;font-size:16px;color:var(--color-text-primary)">总览</h3>
             <div class="stats-grid">
               <div class="stat-card">
                 <span class="stat-value">{{ analytics.overview?.totalUsers ?? 0 }}</span>
@@ -78,7 +78,7 @@
             <div class="analytics-charts-row">
               <div class="analytics-chart-card">
                 <h4>联赛数据对比</h4>
-                <el-table :data="analytics.leagueStats" stripe size="small" style="margin-top:8px">
+                <el-table :data="analytics.leagueStats" size="small" style="margin-top:8px">
                   <el-table-column prop="league" label="联赛" />
                   <el-table-column prop="clubCount" label="俱乐部" width="80" />
                   <el-table-column prop="playerCount" label="球员" width="80" />
@@ -98,7 +98,7 @@
               </div>
               <div class="analytics-chart-card">
                 <h4>月度比赛趋势</h4>
-                <el-table :data="analytics.monthlyMatches" stripe size="small" style="margin-top:8px">
+                <el-table :data="analytics.monthlyMatches" size="small" style="margin-top:8px">
                   <el-table-column prop="month" label="月份" width="90" />
                   <el-table-column prop="matchCount" label="比赛数" width="80" />
                   <el-table-column prop="goalCount" label="进球数" width="80" />
@@ -106,7 +106,7 @@
               </div>
             </div>
           </div>
-          <div v-else style="text-align:center;padding:40px;color:#999">加载中...</div>
+          <div v-else style="text-align:center;padding:40px;color:var(--color-text-muted)">加载中...</div>
         </el-tab-pane>
 
         <el-tab-pane label="用户管理" name="users">
@@ -119,7 +119,7 @@
             <el-input v-model="userKeyword" placeholder="搜索用户名/昵称" clearable style="width:200px" @keyup.enter="fetchUsers" />
             <el-button type="primary" @click="fetchUsers">搜索</el-button>
           </div>
-          <el-table :data="users" stripe>
+          <el-table :data="users">
             <el-table-column prop="userId" label="ID" width="70" />
             <el-table-column prop="username" label="用户名" width="130" />
             <el-table-column prop="nickname" label="昵称" width="130" />
@@ -175,7 +175,7 @@
             </el-select>
             <el-button type="primary" @click="openMatchDialog()">新增比赛</el-button>
           </div>
-          <el-table :data="matches" stripe>
+          <el-table :data="matches">
             <el-table-column prop="matchId" label="ID" width="90" />
             <el-table-column label="主队" width="130">
               <template #default="{ row }">{{ getClubName(row.homeClubId) }}</template>
@@ -218,7 +218,7 @@
             </el-select>
             <el-button type="primary" @click="openTransferDialog()">新增转会</el-button>
           </div>
-          <el-table :data="transfers" stripe>
+          <el-table :data="transfers">
             <el-table-column prop="logId" label="ID" width="70" />
             <el-table-column label="球员" width="130">
               <template #default="{ row }">{{ getPlayerName(row.playerId) }}</template>
@@ -254,7 +254,7 @@
           <div class="toolbar">
             <el-button type="primary" @click="openClubDialog()">新增俱乐部</el-button>
           </div>
-          <el-table :data="clubs" stripe>
+          <el-table :data="clubs">
             <el-table-column prop="clubId" label="ID" width="70" />
             <el-table-column prop="name" label="名称" min-width="150" />
             <el-table-column prop="shortName" label="简称" width="100" />
@@ -275,7 +275,7 @@
 
         <el-tab-pane label="数据导入导出" name="io">
           <div class="io-section">
-            <h3 style="margin:0 0 16px;font-size:16px;color:#333">数据导出</h3>
+            <h3 style="margin:0 0 16px;font-size:16px;color:var(--color-text-primary)">数据导出</h3>
             <div class="io-grid">
               <div class="io-card">
                 <h4>俱乐部数据</h4>
@@ -319,7 +319,7 @@
               </div>
             </div>
 
-            <h3 style="margin:28px 0 16px;font-size:16px;color:#333">数据导入</h3>
+            <h3 style="margin:28px 0 16px;font-size:16px;color:var(--color-text-primary)">数据导入</h3>
             <div class="io-grid">
               <div class="io-card">
                 <h4>导入球员</h4>
@@ -360,7 +360,7 @@
             <el-button type="primary" @click="fetchNews">搜索</el-button>
             <el-button type="success" @click="openNewsDialog()">新增新闻</el-button>
           </div>
-          <el-table :data="newsList" stripe>
+          <el-table :data="newsList">
             <el-table-column prop="articleId" label="ID" width="70" />
             <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
             <el-table-column prop="sourceName" label="来源" width="100" />
@@ -398,7 +398,7 @@
             <el-button type="primary" @click="fetchPlayers">搜索</el-button>
             <el-button type="success" @click="openPlayerDialog()">新增球员</el-button>
           </div>
-          <el-table :data="players" stripe>
+          <el-table :data="players">
             <el-table-column prop="playerId" label="ID" width="70" />
             <el-table-column prop="nameCn" label="中文名" width="100" />
             <el-table-column prop="name" label="英文名" width="120" />
@@ -433,7 +433,7 @@
             <el-input v-model="postKeyword" placeholder="搜索帖子内容" clearable style="width:200px" @keyup.enter="fetchPosts" />
             <el-button type="primary" @click="fetchPosts">搜索</el-button>
           </div>
-          <el-table :data="posts" stripe>
+          <el-table :data="posts">
             <el-table-column prop="postId" label="ID" width="70" />
             <el-table-column label="发布者" width="120">
               <template #default="{ row }">
@@ -479,6 +479,52 @@
           <div class="pagination-wrapper">
             <el-pagination v-model:current-page="postPage" :page-size="pageSize" :total="postTotal" layout="prev, pager, next" @current-change="fetchPosts" />
           </div>
+        </el-tab-pane>
+        <el-tab-pane label="赛季管理" name="seasons">
+          <div class="season-section">
+            <div class="season-header">
+              <h3>当前赛季</h3>
+              <el-button type="primary" @click="showStartNewSeasonDialog">开启新赛季</el-button>
+            </div>
+            <el-table :data="activeSeasons" stripe>
+              <el-table-column prop="league" label="联赛" width="150" />
+              <el-table-column prop="seasonName" label="赛季名称" width="120" />
+              <el-table-column prop="totalRounds" label="总轮数" width="80" />
+              <el-table-column prop="status" label="状态" width="100">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'" size="small">{{ row.status === 'ACTIVE' ? '进行中' : row.status }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="startYear" label="开始年份" width="100" />
+              <el-table-column prop="endYear" label="结束年份" width="100" />
+              <el-table-column label="操作" width="250">
+                <template #default="{ row }">
+                  <el-button type="warning" size="small" @click="handleResetSeason(row.league)">重置数据</el-button>
+                  <el-button type="info" size="small" @click="handleFinishSeason(row.league)">结束赛季</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <div class="season-history" style="margin-top: 30px;">
+              <h3>历史赛季</h3>
+              <el-table :data="allSeasons.filter(s => s.status !== 'ACTIVE')" stripe>
+                <el-table-column prop="league" label="联赛" width="150" />
+                <el-table-column prop="seasonName" label="赛季名称" width="120" />
+                <el-table-column prop="totalRounds" label="总轮数" width="80" />
+                <el-table-column prop="status" label="状态" width="100">
+                  <template #default="{ row }">
+                    <el-tag :type="row.status === 'FINISHED' ? 'info' : 'default'" size="small">{{ row.status }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="startYear" label="开始年份" width="100" />
+                <el-table-column prop="endYear" label="结束年份" width="100" />
+              </el-table>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="竞猜管理" name="predictions">
+          <PredictionAdmin />
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -751,14 +797,43 @@
         <el-button type="primary" @click="handleSavePlayer">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="newSeasonDialogVisible" title="开启新赛季" width="450px">
+      <el-form :model="newSeasonForm" label-width="100px">
+        <el-form-item label="联赛" required>
+          <el-select v-model="newSeasonForm.league" placeholder="选择或输入联赛名称" allow-create filterable style="width:100%">
+            <el-option label="Premier League" value="Premier League" />
+            <el-option label="La Liga" value="La Liga" />
+            <el-option label="Serie A" value="Serie A" />
+            <el-option label="Bundesliga" value="Bundesliga" />
+            <el-option label="Ligue 1" value="Ligue 1" />
+            <el-option label="Chinese Super League" value="Chinese Super League" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="赛季名称" required>
+          <el-input v-model="newSeasonForm.seasonName" placeholder="如 2026-2027" />
+        </el-form-item>
+        <el-form-item label="总轮数">
+          <el-input-number v-model="newSeasonForm.totalRounds" :min="10" :max="60" />
+        </el-form-item>
+        <el-alert type="warning" :closable="false" style="margin-top: 10px;">
+          开启新赛季将自动结束当前赛季，并清空积分榜、球员数据和比赛数据！
+        </el-alert>
+      </el-form>
+      <template #footer>
+        <el-button @click="newSeasonDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleStartNewSeason">确认开启</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminApi, clubApi, playerApi, newsApi, analyticsApi, socialApi } from '@/api'
+import { adminApi, clubApi, playerApi, newsApi, analyticsApi, socialApi, seasonApi } from '@/api'
 import ImageUpload from '@/components/ImageUpload.vue'
+import PredictionAdmin from '@/components/PredictionAdmin.vue'
 
 const activeTab = ref('stats')
 const pageSize = ref(20)
@@ -831,6 +906,11 @@ const postFilterCircle = ref<any>('')
 const postKeyword = ref('')
 const circles = ref<any[]>([])
 
+const allSeasons = ref<any[]>([])
+const activeSeasons = ref<any[]>([])
+const newSeasonDialogVisible = ref(false)
+const newSeasonForm = ref<any>({ league: '', seasonName: '', totalRounds: 38 })
+
 function matchStatusType(status: string) {
   if (status === 'FINISHED') return 'success'
   if (status === 'IN_PROGRESS') return 'warning'
@@ -861,6 +941,7 @@ watch(activeTab, (tab) => {
   if (tab === 'news' && newsList.value.length === 0) fetchNews()
   if (tab === 'players' && players.value.length === 0) fetchPlayers()
   if (tab === 'community' && posts.value.length === 0) { fetchPosts(); fetchCircles() }
+  if (tab === 'seasons') { fetchAllSeasons(); fetchActiveSeasons() }
 })
 
 onMounted(() => {
@@ -1281,20 +1362,115 @@ async function handleDeletePost(postId: number) {
     if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '删除失败')
   }
 }
+
+async function fetchAllSeasons() {
+  try {
+    const res = await seasonApi.getAll()
+    allSeasons.value = res.data.data || []
+  } catch (e) { console.error(e) }
+}
+
+async function fetchActiveSeasons() {
+  try {
+    const res = await seasonApi.getActive()
+    activeSeasons.value = res.data.data || []
+  } catch (e) { console.error(e) }
+}
+
+function showStartNewSeasonDialog() {
+  newSeasonForm.value = { league: '', seasonName: '', totalRounds: 38 }
+  newSeasonDialogVisible.value = true
+}
+
+async function handleStartNewSeason() {
+  try {
+    if (!newSeasonForm.value.league || !newSeasonForm.value.seasonName) {
+      ElMessage.warning('请填写联赛和赛季名称')
+      return
+    }
+    await ElMessageBox.confirm('确定要开启新赛季吗？这将清空当前赛季的所有数据！', '警告', { type: 'warning' })
+    await seasonApi.startNew({
+      league: newSeasonForm.value.league,
+      seasonName: newSeasonForm.value.seasonName,
+      totalRounds: newSeasonForm.value.totalRounds
+    })
+    ElMessage.success('新赛季已开启')
+    newSeasonDialogVisible.value = false
+    fetchAllSeasons()
+    fetchActiveSeasons()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '操作失败')
+  }
+}
+
+async function handleResetSeason(league: string) {
+  try {
+    await ElMessageBox.confirm('确定要重置 ' + league + ' 的赛季数据吗？这将清空积分榜和球员数据！', '警告', { type: 'warning' })
+    await seasonApi.resetSeason(league)
+    ElMessage.success('赛季数据已重置')
+    fetchAllSeasons()
+    fetchActiveSeasons()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '操作失败')
+  }
+}
+
+async function handleFinishSeason(league: string) {
+  try {
+    await ElMessageBox.confirm('确定要结束 ' + league + ' 当前赛季吗？', '确认', { type: 'warning' })
+    await seasonApi.finishSeason(league)
+    ElMessage.success('赛季已结束')
+    fetchAllSeasons()
+    fetchActiveSeasons()
+  } catch (e: any) {
+    if (e !== 'cancel') ElMessage.error(e.response?.data?.message || '操作失败')
+  }
+}
 </script>
 
 <style scoped lang="scss">
+@use '@/styles/tokens' as *;
+
+.page-container {
+  background: $surface-dark;
+  padding: $space-6 $space-6 $space-8;
+  max-width: $content-max-width;
+  margin: 0 auto;
+}
+
 .admin-tabs {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  .el-tabs--border-card {
+    background: $surface-card;
+    border: 1px solid $border-subtle;
+    border-radius: $radius-xl;
+    overflow: hidden;
+  }
+
+  // Fix table body white bg
+  :deep(.el-table) {
+    background: $surface-card !important;
+  }
+
+  :deep(.el-table__body-wrapper),
+  :deep(.el-table__body),
+  :deep(.el-table__row),
+  :deep(.el-table__empty-block) {
+    background: transparent !important;
+  }
+
+  :deep(.el-table__row td) {
+    background: transparent !important;
+  }
+
+  :deep(.el-table__cell) {
+    background: transparent !important;
+  }
 }
 
 .toolbar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: $space-3;
+  margin-bottom: $space-5;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -1302,13 +1478,13 @@ async function handleDeletePost(postId: number) {
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: $space-5;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  gap: $space-4;
 
   @media (max-width: 800px) {
     grid-template-columns: repeat(2, 1fr);
@@ -1317,20 +1493,29 @@ async function handleDeletePost(postId: number) {
 
 .stat-card {
   text-align: center;
-  padding: 24px;
-  background: #f5f5f5;
-  border-radius: 10px;
+  padding: $space-5;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  transition: all $duration-fast $ease-out;
+
+  &:hover {
+    border-color: rgba($purple-primary, 0.3);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
 
   .stat-value {
     display: block;
-    font-size: 32px;
-    font-weight: 700;
-    color: #1a56db;
+    font-family: $font-display;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
   }
 
   .stat-label {
-    font-size: 14px;
-    color: #737373;
+    font-size: $font-size-sm;
+    color: $text-muted;
     margin-top: 4px;
   }
 }
@@ -1338,8 +1523,8 @@ async function handleDeletePost(postId: number) {
 .stats-row-3 {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-  margin-top: 16px;
+  gap: $space-3;
+  margin-top: $space-4;
 
   @media (max-width: 900px) {
     grid-template-columns: repeat(4, 1fr);
@@ -1348,20 +1533,22 @@ async function handleDeletePost(postId: number) {
 
 .stat-card-sm {
   text-align: center;
-  padding: 14px 8px;
-  background: #f0f4ff;
-  border-radius: 8px;
+  padding: $space-3;
+  background: $surface-mid;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-md;
 
   .stat-value-sm {
     display: block;
-    font-size: 22px;
-    font-weight: 700;
-    color: #3b82f6;
+    font-family: $font-display;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
   }
 
   .stat-label {
-    font-size: 12px;
-    color: #737373;
+    font-size: $font-size-xs;
+    color: $text-muted;
     margin-top: 2px;
   }
 }
@@ -1369,8 +1556,8 @@ async function handleDeletePost(postId: number) {
 .analytics-charts-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 20px;
+  gap: $space-4;
+  margin-top: $space-5;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -1378,78 +1565,90 @@ async function handleDeletePost(postId: number) {
 }
 
 .analytics-chart-card {
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 16px;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  padding: $space-4;
 
   h4 {
-    margin: 0 0 8px;
-    font-size: 14px;
-    color: #333;
+    margin: 0 0 $space-3;
+    font-family: $font-display;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $text-secondary;
+    letter-spacing: $letter-spacing-wide;
+    text-transform: uppercase;
   }
 }
 
 .bar-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: $space-2;
+  margin-bottom: $space-3;
 
   .bar-label {
-    width: 40px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #555;
+    width: 36px;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $text-muted;
+    flex-shrink: 0;
   }
 
   .bar-track {
     flex: 1;
-    height: 20px;
-    background: #e5e7eb;
-    border-radius: 4px;
+    height: 8px;
+    background: $surface-mid;
+    border-radius: $radius-full;
     overflow: hidden;
-  }
 
-  .bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #1a56db);
-    border-radius: 4px;
-    transition: width 0.3s;
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, $purple-primary, $purple-light);
+      border-radius: $radius-full;
+      transition: width $duration-slow $ease-out;
+    }
   }
 
   .bar-count {
     width: 36px;
     text-align: right;
-    font-size: 13px;
-    color: #555;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $text-secondary;
+    flex-shrink: 0;
   }
 }
 
 .io-section {
   h4 {
-    margin: 0 0 4px;
-    font-size: 14px;
-    color: #333;
+    margin: 0 0 $space-1;
+    font-family: $font-display;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $text-secondary;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-wide;
   }
 
   p {
     margin: 0;
-    font-size: 12px;
-    color: #888;
+    font-size: $font-size-xs;
+    color: $text-muted;
   }
 }
 
 .io-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
+  gap: $space-4;
 }
 
 .io-card {
-  background: #f9fafb;
-  border-radius: 10px;
-  padding: 16px;
-  border: 1px solid #e5e7eb;
+  background: $surface-card;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  padding: $space-4;
 }
 
 .post-user-cell {
@@ -1458,19 +1657,19 @@ async function handleDeletePost(postId: number) {
   gap: 2px;
 
   .user-name {
-    font-weight: 500;
-    color: #333;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
   }
 
   .user-club-sm {
     font-size: 11px;
-    color: #888;
+    color: $text-muted;
   }
 }
 
 .stat-sm {
-  font-size: 12px;
-  color: #666;
-  margin-right: 8px;
+  font-size: $font-size-xs;
+  color: $text-muted;
+  margin-right: $space-2;
 }
 </style>

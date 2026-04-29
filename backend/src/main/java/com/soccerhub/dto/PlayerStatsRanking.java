@@ -19,4 +19,5 @@ public class PlayerStatsRanking {
     private Integer redCards;
     private Integer appearances;
     private Long rank;
+    private String avatarUrl;
 }

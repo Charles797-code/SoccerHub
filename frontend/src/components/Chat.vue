@@ -20,7 +20,7 @@
     <div class="chat-input-area">
       <el-input v-model="newMessage" placeholder="输入消息..." size="large" @keyup.enter="sendMessage"
         :disabled="sending" />
-      <AppButton type="primary" size="medium" :loading="sending" @click="sendMessage" style="flex-shrink: 0;">
+      <AppButton type="primary" size="md" :loading="sending" @click="sendMessage" style="flex-shrink: 0;">
         发送
       </AppButton>
     </div>

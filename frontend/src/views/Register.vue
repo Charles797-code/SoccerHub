@@ -28,7 +28,7 @@
             show-password @keyup.enter="handleRegister" />
         </el-form-item>
 
-        <AppButton type="primary" size="large" :loading="loading" block @click="handleRegister">
+        <AppButton type="primary" size="lg" :loading="loading" block @click="handleRegister">
           创建账号
         </AppButton>
       </el-form>
@@ -104,55 +104,89 @@ async function handleRegister() {
 </script>
 
 <style scoped lang="scss">
+@use '@/styles/tokens' as *;
+
 .register-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: #f5f5f5;
+  background: $surface-dark;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba($purple-primary, 0.08), transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba($gold-bright, 0.04), transparent 50%);
+    pointer-events: none;
+  }
 }
 
 .register-card {
   width: 100%;
-  max-width: 400px;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 36px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 420px;
+  background: $surface-card;
+  border: 1px solid $border-default;
+  border-radius: $radius-2xl;
+  padding: $space-10 $space-8;
+  box-shadow: $shadow-xl;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba($purple-primary, 0.5), transparent);
+  }
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: $space-8;
 
   h1 {
-    font-size: 26px;
-    font-weight: 700;
+    font-family: $font-display;
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-black;
     margin: 0;
-    color: #262626;
-    letter-spacing: -0.3px;
+    background: linear-gradient(135deg, $purple-light 0%, $gold-bright 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: $letter-spacing-tight;
   }
 
   p {
-    color: #737373;
-    margin: 8px 0 0;
-    font-size: 14px;
+    color: $text-muted;
+    margin: $space-2 0 0;
+    font-size: $font-size-base;
   }
 }
 
 .register-footer {
   text-align: center;
-  margin-top: 20px;
-  color: #737373;
-  font-size: 14px;
+  margin-top: $space-6;
+  color: $text-muted;
+  font-size: $font-size-base;
 
   a {
-    color: #1a56db;
-    margin-left: 4px;
+    color: $purple-light;
+    margin-left: $space-1;
+    font-weight: $font-weight-medium;
+    transition: color $duration-fast $ease-out;
 
     &:hover {
-      text-decoration: underline;
+      color: $gold-bright;
     }
   }
 }
