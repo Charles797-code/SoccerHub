@@ -14,7 +14,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadResourcePath = "file:d:/soccer_community/backend/uploads/";
+        // 使用相对于项目运行目录的相对路径
+        String uploadResourcePath = "file:uploads/";
         registry.addResourceHandler("/uploads/**", "/api/uploads/**")
                 .addResourceLocations(uploadResourcePath);
 
