@@ -14,7 +14,10 @@
 
     <div class="card-grid">
       <div v-for="player in players" :key="player.playerId" class="player-card" @click="goToPlayer(player.playerId)">
-        <div class="player-avatar">{{ (player.nameCn || player.name)?.charAt(0) }}</div>
+        <div class="player-avatar">
+          <img v-if="player.avatarUrl" :src="getImageUrl(player.avatarUrl)" />
+          <span v-else>{{ (player.nameCn || player.name)?.charAt(0) }}</span>
+        </div>
         <div class="player-info">
           <h4>{{ player.nameCn || player.name }}</h4>
           <div class="player-meta">
@@ -92,6 +95,13 @@ async function fetchPlayers() {
 
 function goToPlayer(playerId: number) {
   router.push(`/players/${playerId}`)
+}
+
+function getImageUrl(path: string) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  if (path.startsWith('/uploads/')) return path
+  return '/uploads/' + path.replace(/^\//, '')
 }
 </script>
 

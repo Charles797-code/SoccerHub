@@ -114,6 +114,79 @@ const routes: RouteRecordRaw[] = [
       }
     ]
   },
+  // Mobile routes
+  {
+    path: '/m',
+    component: () => import('@/views/mobile/MobileLayout.vue'),
+    meta: { requiresAuth: false },
+    children: [
+      {
+        path: '',
+        name: 'MobileHome',
+        component: () => import('@/views/mobile/MobileHome.vue')
+      },
+      {
+        path: 'clubs',
+        name: 'MobileClubs',
+        component: () => import('@/views/mobile/MobileClubs.vue')
+      },
+      {
+        path: 'clubs/:id',
+        name: 'MobileClubDetail',
+        component: () => import('@/views/mobile/MobileClubDetail.vue')
+      },
+      {
+        path: 'players',
+        name: 'MobilePlayers',
+        component: () => import('@/views/mobile/MobilePlayers.vue')
+      },
+      {
+        path: 'players/:id',
+        name: 'MobilePlayerDetail',
+        component: () => import('@/views/mobile/MobilePlayerDetail.vue')
+      },
+      {
+        path: 'matches',
+        name: 'MobileMatches',
+        component: () => import('@/views/mobile/MobileMatches.vue')
+      },
+      {
+        path: 'matches/:id',
+        name: 'MobileMatchDetail',
+        component: () => import('@/views/mobile/MobileMatchDetail.vue')
+      },
+      {
+        path: 'rankings',
+        name: 'MobileRankings',
+        component: () => import('@/views/mobile/MobileRankings.vue')
+      },
+      {
+        path: 'standings',
+        name: 'MobileStandings',
+        component: () => import('@/views/mobile/MobileStandings.vue')
+      },
+      {
+        path: 'news',
+        name: 'MobileNews',
+        component: () => import('@/views/mobile/MobileNews.vue')
+      },
+      {
+        path: 'news/:id',
+        name: 'MobileNewsDetail',
+        component: () => import('@/views/mobile/MobileNewsDetail.vue')
+      },
+      {
+        path: 'profile',
+        name: 'MobileProfile',
+        component: () => import('@/views/mobile/MobileProfile.vue')
+      },
+      {
+        path: 'community',
+        name: 'MobileCommunity',
+        component: () => import('@/views/mobile/MobileCommunity.vue')
+      }
+    ]
+  },
   {
     path: '/:pathMatch(.*)*',
     redirect: '/'

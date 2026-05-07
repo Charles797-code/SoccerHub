@@ -166,13 +166,15 @@
         <el-form-item label="位置">
           <el-select v-model="playerForm.position" style="width:100%">
             <el-option label="门将" value="GK" />
-            <el-option label="后卫" value="DEF" />
-            <el-option label="中场" value="MID" />
-            <el-option label="前锋" value="FWD" />
+            <el-option label="后卫" value="DF" />
+            <el-option label="中场" value="MF" />
+            <el-option label="前锋" value="FW" />
           </el-select>
         </el-form-item>
         <el-form-item label="号码">
-          <el-input-number v-model="playerForm.jerseyNumber" :min="0" :max="99" />
+          <el-select v-model="playerForm.jerseyNumber" placeholder="选择号码" style="width:100%">
+            <el-option v-for="n in availableNumbers" :key="n.value" :label="n.label" :value="n.value" :disabled="n.disabled" />
+          </el-select>
         </el-form-item>
         <el-form-item label="国籍">
           <el-input v-model="playerForm.nationality" />
@@ -306,7 +308,7 @@ const coachDialogVisible = ref(false)
 const coachForm = ref<any>({})
 const allClubs = ref<any[]>([])
 
-const positionMap: Record<string, string> = { GK: '门将', DEF: '后卫', MID: '中场', FWD: '前锋' }
+const positionMap: Record<string, string> = { GK: '门将', DF: '后卫', MF: '中场', FW: '前锋' }
 const playerStatusMap: Record<string, string> = { ACTIVE: '活跃', INJURED: '受伤', FREE: '自由身', RETIRED: '退役' }
 const coachRoleMap: Record<string, string> = {
   HEAD_COACH: '主教练',
@@ -342,6 +344,22 @@ watch(activeTab, (tab) => {
   if (tab === 'club' && !club.value) fetchClub()
   if (tab === 'players' && players.value.length === 0) fetchPlayers()
   if (tab === 'coaches' && coaches.value.length === 0) fetchCoaches()
+})
+
+const usedJerseyNumbers = computed(() => {
+  return new Set(players.value.map((p: any) => p.jerseyNumber).filter((n: any) => n != null))
+})
+
+const availableNumbers = computed(() => {
+  const numbers = []
+  const used = usedJerseyNumbers.value
+  const currentNumber = playerForm.value?.jerseyNumber
+  for (let i = 1; i <= 99; i++) {
+    const isUsed = used.has(i)
+    const isDisabled = isUsed && i !== currentNumber
+    numbers.push({ label: String(i), value: i, disabled: isDisabled })
+  }
+  return numbers
 })
 
 onMounted(() => {
@@ -560,5 +578,16 @@ async function handleDeleteCoach(coachId: number) {
     display: flex;
     gap: $space-3;
   }
+}
+
+:deep(.el-select-dropdown__item.is-disabled),
+:deep(.el-select-dropdown__item.is-disabled span) {
+  color: #999 !important;
+  text-decoration: line-through !important;
+}
+
+:deep(.el-select-dropdown__item.is-disabled) {
+  background: #f5f5f5 !important;
+  opacity: 1 !important;
 }
 </style>

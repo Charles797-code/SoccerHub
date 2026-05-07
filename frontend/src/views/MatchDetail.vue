@@ -74,7 +74,7 @@
       </div>
     </div>
 
-    <div v-if="match && canPredict" class="prediction-section">
+    <div v-if="match && canPredict()" class="prediction-section">
       <div class="section-header">
         <h2>🎯 球迷竞猜</h2>
         <span class="points-display">我的积分: {{ userPoints }}</span>

@@ -1,5 +1,11 @@
 <template>
   <div class="page-container">
+    <div class="page-header">
+      <el-button text @click="router.back()" class="back-btn">
+        <el-icon><ArrowLeft /></el-icon>
+        返回
+      </el-button>
+    </div>
     <div v-if="profile" class="user-content">
       <div class="user-card">
         <div class="user-avatar-wrapper">
@@ -118,6 +124,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api'
 
@@ -155,7 +162,7 @@ async function loadProfile() {
   try {
     loading.value = true
     const res = await api.get(`/social/user/${userId.value}`)
-    profile.value = res.data
+    profile.value = res.data.data
     await loadPosts()
   } catch (e) {
     console.error(e)
@@ -167,7 +174,7 @@ async function loadProfile() {
 async function loadPosts() {
   try {
     const res = await api.get(`/social/posts/user/${userId.value}`, { params: { page: 1, pageSize: 20 } })
-    posts.value = res.data.data?.records || []
+    posts.value = res.data.data?.records || res.data.data || []
   } catch (e) {
     console.error(e)
   }
@@ -211,7 +218,7 @@ async function toggleFavorite(post: any) {
 async function showFollowers() {
   try {
     const res = await api.get(`/social/followers/${userId.value}`, { params: { page: 1, pageSize: 50 } })
-    followers.value = res.data.data?.records || []
+    followers.value = res.data.data?.records || res.data.data || []
     showFollowersDialog.value = true
   } catch (e) {
     console.error(e)
@@ -221,7 +228,7 @@ async function showFollowers() {
 async function showFollowing() {
   try {
     const res = await api.get(`/social/following/${userId.value}`, { params: { page: 1, pageSize: 50 } })
-    followingUsers.value = res.data.data?.records || []
+    followingUsers.value = res.data.data?.records || res.data.data || []
     showFollowingDialog.value = true
   } catch (e) {
     console.error(e)
@@ -260,6 +267,19 @@ function formatTime(time: string) {
 
 <style scoped lang="scss">
 @use '@/styles/tokens' as *;
+
+.page-header {
+  margin-bottom: $space-4;
+}
+
+.back-btn {
+  color: $text-muted;
+  transition: color $duration-fast $ease-out;
+
+  &:hover {
+    color: $purple-light;
+  }
+}
 
 .empty-state {
   text-align: center;

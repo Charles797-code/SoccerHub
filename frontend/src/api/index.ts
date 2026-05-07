@@ -99,6 +99,8 @@ export const playerApi = {
     api.get(`/players/${id}`),
   getRankings: (params: any) =>
     api.get('/players/rankings', { params }),
+  rate: (id: number, data: any) =>
+    api.post(`/players/${id}/rate`, data),
   create: (data: any) =>
     api.post('/players', data),
   update: (id: number, data: any) =>
@@ -137,6 +139,10 @@ export const matchApi = {
     api.get('/matches/live'),
   getUpcoming: (limit = 10) =>
     api.get('/matches/upcoming', { params: { limit } }),
+  comment: (matchId: string, data: any) =>
+    api.post(`/matches/${matchId}/comments`, data),
+  getComments: (matchId: string, params?: any) =>
+    api.get(`/matches/${matchId}/comments`, { params }),
   upsert: (data: any) =>
     api.post('/matches/upsert', data),
   delete: (matchId: string) =>
@@ -356,6 +362,10 @@ export const socialApi = {
     api.get('/social/circles'),
   getPosts: (params: any) =>
     api.get('/social/admin/posts', { params }),
+  listPosts: (params: any) =>
+    api.get('/social/posts', { params }),
+  createPost: (data: any) =>
+    api.post('/social/posts', data),
   pinPost: (postId: number, pinned: boolean) =>
     api.post(`/social/admin/posts/${postId}/pin`, null, { params: { pinned } }),
   essencePost: (postId: number, essence: boolean) =>

@@ -1,5 +1,11 @@
 <template>
   <div class="page-container">
+    <div class="page-header">
+      <el-button text @click="router.back()" class="back-btn">
+        <el-icon><ArrowLeft /></el-icon>
+        返回
+      </el-button>
+    </div>
     <div v-if="player" class="player-detail">
       <div class="player-banner">
         <div class="banner-overlay"></div>
@@ -97,12 +103,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { playerApi, ratingApi } from '@/api'
 import AppButton from '@/components/AppButton.vue'
 
 const route = useRoute()
+const router = useRouter()
 const player = ref<any>(null)
 const ratingScore = ref(5)
 const ratingLoading = ref(false)
@@ -159,6 +167,19 @@ function getImageUrl(path: string) {
 
 <style scoped lang="scss">
 @use '@/styles/tokens' as *;
+
+.page-header {
+  margin-bottom: $space-4;
+}
+
+.back-btn {
+  color: $text-muted;
+  transition: color $duration-fast $ease-out;
+
+  &:hover {
+    color: $purple-light;
+  }
+}
 
 .loading-state {
   padding: $space-6;

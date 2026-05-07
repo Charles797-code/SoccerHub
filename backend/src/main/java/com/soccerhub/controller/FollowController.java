@@ -53,7 +53,6 @@ public class FollowController {
     }
 
     @GetMapping("/my-follows")
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get my followed clubs")
     public ResponseEntity<ApiResponse<List<UserClubFollow>>> getMyFollows(Authentication authentication) {
         // Needs user ID from auth

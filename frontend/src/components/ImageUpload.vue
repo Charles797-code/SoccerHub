@@ -78,12 +78,15 @@ async function uploadImage(file: File) {
   uploading.value = true
   try {
     const res = await uploadApi.uploadImage(file)
-    if (res.data.success) {
+    if (res.data && res.data.success && res.data.data) {
       emit('update:modelValue', res.data.data)
       ElMessage.success('上传成功')
+    } else {
+      ElMessage.error(res.data?.message || '上传失败')
     }
   } catch (e: any) {
-    ElMessage.error(e?.response?.data?.message || '上传失败')
+    const msg = e?.response?.data?.message || e?.message || '上传失败'
+    ElMessage.error(msg)
   } finally {
     uploading.value = false
   }

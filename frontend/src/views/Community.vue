@@ -250,7 +250,7 @@ async function loadPosts() {
     } else {
       res = await api.get('/social/posts', { params: { page: currentPage.value, pageSize } })
     }
-    const newPosts = res.data.data?.records || []
+    const newPosts = res.data.data?.records || res.data.data || []
     posts.value = currentPage.value === 1 ? newPosts : [...posts.value, ...newPosts]
     hasMore.value = newPosts.length === pageSize
   } catch (e) {
@@ -389,7 +389,7 @@ async function toggleComments(post: any) {
 async function fetchComments(post: any) {
   try {
     const res = await api.get(`/social/posts/${post.postId}/comments`, { params: { page: 1, pageSize: 20 } })
-    post.comments = res.data.data?.records || []
+    post.comments = res.data.data?.records || res.data.data || []
     post.commentCount = res.data.data?.total || post.comments.length
   } catch (e) {
     console.error(e)

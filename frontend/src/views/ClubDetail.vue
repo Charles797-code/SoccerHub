@@ -1,5 +1,11 @@
 <template>
   <div class="page-container">
+    <div class="page-header">
+      <el-button text @click="router.back()" class="back-btn">
+        <el-icon><ArrowLeft /></el-icon>
+        返回
+      </el-button>
+    </div>
     <div v-if="club" class="club-detail">
       <div class="club-banner">
         <div class="banner-overlay"></div>
@@ -24,7 +30,10 @@
           <el-tab-pane label="球员阵容" name="players">
             <div class="card-grid">
               <div v-for="player in players" :key="player.playerId" class="player-card" @click="goToPlayer(player.playerId)">
-                <div class="player-avatar">{{ (player.nameCn || player.name)?.charAt(0) }}</div>
+                <div class="player-avatar">
+                  <img v-if="player.avatarUrl" :src="getImageUrl(player.avatarUrl)" />
+                  <span v-else>{{ (player.nameCn || player.name)?.charAt(0) }}</span>
+                </div>
                 <div class="player-info">
                   <h4>{{ player.nameCn || player.name }}</h4>
                   <div class="player-meta">
@@ -112,6 +121,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { clubApi, playerApi, matchApi } from '@/api'
 
 const router = useRouter()
@@ -204,6 +214,19 @@ function getImageUrl(path: string) {
 
 <style scoped lang="scss">
 @use '@/styles/tokens' as *;
+
+.page-header {
+  margin-bottom: $space-4;
+}
+
+.back-btn {
+  color: $text-muted;
+  transition: color $duration-fast $ease-out;
+
+  &:hover {
+    color: $purple-light;
+  }
+}
 
 .empty-state {
   text-align: center;

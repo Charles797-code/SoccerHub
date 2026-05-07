@@ -187,6 +187,9 @@
               <template #default="{ row }">{{ getClubName(row.awayClubId) }}</template>
             </el-table-column>
             <el-table-column prop="league" label="联赛" width="130" />
+            <el-table-column label="轮次" width="80">
+              <template #default="{ row }">{{ row.round ? '第' + row.round + '轮' : '-' }}</template>
+            </el-table-column>
             <el-table-column prop="status" label="状态" width="90">
               <template #default="{ row }">
                 <el-tag :type="matchStatusType(row.status)" size="small">{{ matchStatusMap[row.status] || row.status }}</el-tag>
@@ -513,7 +516,7 @@
                 <el-table-column prop="totalRounds" label="总轮数" width="80" />
                 <el-table-column prop="status" label="状态" width="100">
                   <template #default="{ row }">
-                    <el-tag :type="row.status === 'FINISHED' ? 'info' : 'default'" size="small">{{ row.status }}</el-tag>
+                    <el-tag :type="row.status === 'FINISHED' ? 'info' : undefined" size="small">{{ row.status }}</el-tag>
                   </template>
                 </el-table-column>
                 <el-table-column prop="startYear" label="开始年份" width="100" />
@@ -529,32 +532,43 @@
       </el-tabs>
     </div>
 
-    <el-dialog v-model="matchDialogVisible" :title="matchForm.matchId ? '编辑比赛' : '新增比赛'" width="550px">
+    <el-dialog v-model="matchDialogVisible" :title="isNewMatch ? '新增比赛' : '编辑比赛'" width="550px">
       <el-form :model="matchForm" label-width="90px">
-        <el-form-item label="比赛ID" v-if="!matchForm.matchId">
+        <el-form-item label="比赛ID" v-if="isNewMatch">
           <el-input v-model="matchForm.matchId" placeholder="如 EPL007" />
         </el-form-item>
-        <el-form-item label="主队">
-          <el-select v-model="matchForm.homeClubId" placeholder="选择主队" style="width:100%">
-            <el-option v-for="c in allClubs" :key="c.clubId" :label="c.shortName || c.name" :value="c.clubId" />
+        <el-form-item label="联赛">
+          <el-select v-model="matchForm.league" placeholder="请选择联赛" style="width:100%" filterable @change="onLeagueChange">
+            <el-option v-for="l in availableLeagues" :key="l" :label="l" :value="l" />
           </el-select>
         </el-form-item>
-        <el-form-item label="客队">
-          <el-select v-model="matchForm.awayClubId" placeholder="选择客队" style="width:100%">
-            <el-option v-for="c in allClubs" :key="c.clubId" :label="c.shortName || c.name" :value="c.clubId" />
+        <el-form-item :label="'主队' + (matchForm.league ? '（' + matchForm.league + '）' : '')">
+          <el-select v-model="matchForm.homeClubId" placeholder="选择主队" style="width:100%" clearable>
+            <el-option v-for="c in filteredClubs" :key="c.clubId" :label="c.shortName || c.name" :value="c.clubId" />
+          </el-select>
+          <div style="color:#909399;font-size:12px;margin-top:4px" v-if="!matchForm.league">请先选择联赛</div>
+        </el-form-item>
+        <el-form-item :label="'客队' + (matchForm.league ? '（' + matchForm.league + '）' : '')">
+          <el-select v-model="matchForm.awayClubId" placeholder="选择客队" style="width:100%" clearable>
+            <el-option v-for="c in filteredClubs" :key="c.clubId" :label="c.shortName || c.name" :value="c.clubId" />
           </el-select>
         </el-form-item>
         <el-form-item label="比赛时间">
           <el-date-picker v-model="matchForm.matchTime" type="datetime" placeholder="选择时间" style="width:100%" />
         </el-form-item>
-        <el-form-item label="联赛">
-          <el-input v-model="matchForm.league" />
-        </el-form-item>
         <el-form-item label="赛季">
-          <el-input v-model="matchForm.season" placeholder="如 2024-2025" />
+          <el-select v-model="matchForm.season" placeholder="选择赛季" style="width:100%" :disabled="!matchForm.league" filterable @change="onSeasonChange">
+            <el-option v-for="s in availableSeasons" :key="s.seasonName" :label="s.seasonName" :value="s.seasonName" />
+          </el-select>
+          <div style="color:#909399;font-size:12px;margin-top:4px" v-if="!matchForm.league">请先选择联赛</div>
         </el-form-item>
         <el-form-item label="轮次">
-          <el-input v-model="matchForm.round" />
+          <el-select v-model="matchForm.round" placeholder="选择轮次" style="width:100%" clearable>
+            <el-option v-for="r in dialogAvailableRounds" :key="r" :label="'第' + r + '轮'" :value="r" :disabled="usedRounds.includes(r)" />
+          </el-select>
+          <div style="color:#909399;font-size:12px;margin-top:4px" v-if="selectedSeasonInfo">
+            该赛季共{{ selectedSeasonInfo.totalRounds }}轮，已使用{{ usedRounds.length }}轮
+          </div>
         </el-form-item>
         <el-form-item label="场地">
           <el-input v-model="matchForm.venue" />
@@ -650,10 +664,16 @@
           </el-select>
         </el-form-item>
         <el-form-item label="转会费">
-          <el-input-number v-model="transferForm.transferFee" :min="0" :step="1000000" style="width:100%" />
+          <el-input-number v-model="transferForm.transferFee" :min="0" :step="1000000" style="width:100%" placeholder="输入转会费（单位：元）" />
         </el-form-item>
         <el-form-item label="赛季">
-          <el-input v-model="transferForm.season" placeholder="如 2024-2025" />
+          <div style="display:flex;align-items:center;gap:8px">
+            <el-select v-model="transferSeasonStart" placeholder="起始年" style="width:120px" @change="updateTransferSeason">
+              <el-option v-for="y in transferYearOptions" :key="y" :label="y" :value="y" />
+            </el-select>
+            <span>-</span>
+            <el-input :model-value="transferSeasonEnd" disabled style="width:120px" />
+          </div>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="transferForm.notes" type="textarea" :rows="2" />
@@ -691,7 +711,7 @@
           <el-input v-model="clubForm.stadium" />
         </el-form-item>
         <el-form-item label="容量">
-          <el-input-number v-model="clubForm.stadiumCapacity" :min="0" />
+          <el-input-number v-model="clubForm.stadiumCapacity" :min="1000" :max="200000" :step="1000" style="width:100%" placeholder="输入容量" />
         </el-form-item>
         <el-form-item label="简介">
           <el-input v-model="clubForm.description" type="textarea" :rows="3" />
@@ -763,22 +783,24 @@
         <el-form-item label="位置">
           <el-select v-model="playerForm.position" style="width:100%">
             <el-option label="门将" value="GK" />
-            <el-option label="后卫" value="DEF" />
-            <el-option label="中场" value="MID" />
-            <el-option label="前锋" value="FWD" />
+            <el-option label="后卫" value="DF" />
+            <el-option label="中场" value="MF" />
+            <el-option label="前锋" value="FW" />
           </el-select>
         </el-form-item>
         <el-form-item label="号码">
-          <el-input-number v-model="playerForm.jerseyNumber" :min="0" :max="99" />
+          <el-select v-model="playerForm.jerseyNumber" placeholder="选择号码" clearable style="width:100%">
+            <el-option v-for="n in 99" :key="n" :label="String(n)" :value="n" />
+          </el-select>
         </el-form-item>
         <el-form-item label="国籍">
           <el-input v-model="playerForm.nationality" />
         </el-form-item>
         <el-form-item label="身高(cm)">
-          <el-input-number v-model="playerForm.heightCm" :min="0" />
+          <el-input-number v-model="playerForm.heightCm" :min="150" :max="220" :step="1" style="width:100%" placeholder="输入身高" />
         </el-form-item>
         <el-form-item label="体重(kg)">
-          <el-input-number v-model="playerForm.weightKg" :min="0" />
+          <el-input-number v-model="playerForm.weightKg" :min="50" :max="150" :step="1" style="width:100%" placeholder="输入体重" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="playerForm.status" style="width:100%">
@@ -789,7 +811,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="身价">
-          <el-input-number v-model="playerForm.marketValue" :min="0" :step="1000000" style="width:100%" />
+          <el-input-number v-model="playerForm.marketValue" :min="0" :step="100000" style="width:100%" placeholder="输入身价" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -810,11 +832,27 @@
             <el-option label="Chinese Super League" value="Chinese Super League" />
           </el-select>
         </el-form-item>
-        <el-form-item label="赛季名称" required>
-          <el-input v-model="newSeasonForm.seasonName" placeholder="如 2026-2027" />
+        <el-form-item label="起始年份" required>
+          <el-select v-model="newSeasonStartYear" placeholder="选择年份" style="width:100%" @change="updateNewSeasonName">
+            <el-option v-for="y in seasonYearOptions" :key="y" :label="y" :value="y" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="赛季名称">
+          <el-input :model-value="newSeasonNamePreview" placeholder="自动生成" disabled />
+          <div style="color:#909399;font-size:12px;margin-top:4px">自动格式：起始年份-结束年份</div>
         </el-form-item>
         <el-form-item label="总轮数">
-          <el-input-number v-model="newSeasonForm.totalRounds" :min="10" :max="60" />
+          <el-select v-model="newSeasonForm.totalRounds" placeholder="选择轮数" style="width:100%">
+            <el-option label="10轮（单循环）" :value="10" />
+            <el-option label="18轮" :value="18" />
+            <el-option label="20轮" :value="20" />
+            <el-option label="30轮" :value="30" />
+            <el-option label="34轮" :value="34" />
+            <el-option label="38轮（双循环）" :value="38" />
+            <el-option label="42轮" :value="42" />
+            <el-option label="50轮" :value="50" />
+            <el-option label="60轮" :value="60" />
+          </el-select>
         </el-form-item>
         <el-alert type="warning" :closable="false" style="margin-top: 10px;">
           开启新赛季将自动结束当前赛季，并清空积分榜、球员数据和比赛数据！
@@ -829,7 +867,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi, clubApi, playerApi, newsApi, analyticsApi, socialApi, seasonApi } from '@/api'
 import ImageUpload from '@/components/ImageUpload.vue'
@@ -880,6 +918,10 @@ const allPlayers = ref<any[]>([])
 
 const matchDialogVisible = ref(false)
 const matchForm = ref<any>({})
+const isNewMatch = ref(true)
+const availableSeasons = ref<any[]>([])
+const dialogAvailableRounds = ref<any[]>([])
+const dialogSelectedSeason = ref<any>(null)
 
 const finishDialogVisible = ref(false)
 const finishMatch = ref<any>(null)
@@ -887,10 +929,18 @@ const finishForm = ref<any>({ homeScore: 0, awayScore: 0, events: [] })
 
 const transferDialogVisible = ref(false)
 const transferForm = ref<any>({})
+const transferSeasonStart = ref(new Date().getFullYear())
+const transferSeasonEnd = ref(String(new Date().getFullYear() + 1))
+const transferYearOptions = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - 10 + i)
 
 const clubDialogVisible = ref(false)
 const clubForm = ref<any>({})
 const availableLeagues = ref<string[]>([])
+
+const filteredClubs = computed(() => {
+  if (!matchForm.value.league) return []
+  return allClubs.value.filter((c: any) => c.league === matchForm.value.league)
+})
 
 const playerDialogVisible = ref(false)
 const playerForm = ref<any>({})
@@ -909,7 +959,37 @@ const circles = ref<any[]>([])
 const allSeasons = ref<any[]>([])
 const activeSeasons = ref<any[]>([])
 const newSeasonDialogVisible = ref(false)
-const newSeasonForm = ref<any>({ league: '', seasonName: '', totalRounds: 38 })
+const newSeasonForm = ref<any>({ league: '', totalRounds: 38 })
+const newSeasonStartYear = ref(new Date().getFullYear())
+const seasonYearOptions = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 5 + i)
+
+const newSeasonNamePreview = computed(() => {
+  if (!newSeasonStartYear.value) return ''
+  return `${newSeasonStartYear.value}-${newSeasonStartYear.value + 1}`
+})
+
+const selectedSeasonInfo = computed(() => {
+  if (!matchForm.value.league || !matchForm.value.season) return null
+  return activeSeasons.value.find(s => s.league === matchForm.value.league && s.seasonName === matchForm.value.season) || null
+})
+
+const availableRounds = computed(() => {
+  const info = selectedSeasonInfo.value
+  if (!info) return []
+  return Array.from({ length: info.totalRounds }, (_, i) => i + 1)
+})
+
+const usedRounds = computed(() => {
+  if (!matchForm.value.league || !matchForm.value.season) return []
+  return matches.value
+    .filter(m => m.league === matchForm.value.league && m.season === matchForm.value.season)
+    .map(m => parseInt(String(m.round)))
+    .filter(r => !isNaN(r))
+})
+
+function updateNewSeasonName() {
+  newSeasonForm.value.seasonName = `${newSeasonStartYear.value}-${newSeasonStartYear.value + 1}`
+}
 
 function matchStatusType(status: string) {
   if (status === 'FINISHED') return 'success'
@@ -981,7 +1061,7 @@ async function fetchUsers() {
 
 async function fetchMatches() {
   try {
-    const res = await adminApi.listMatches({ page: matchPage.value, pageSize: pageSize.value, league: matchFilterLeague.value || undefined, status: matchFilterStatus.value || undefined })
+    const res = await adminApi.listMatches({ page: 1, pageSize: 9999, league: matchFilterLeague.value || undefined, status: matchFilterStatus.value || undefined })
     matches.value = res.data.data?.records || []
     matchTotal.value = res.data.data?.total || 0
   } catch (e) { console.error(e) }
@@ -1035,20 +1115,87 @@ async function handleAssignClub(userId: number, managedClubId: number) {
 }
 
 function openMatchDialog(row?: any) {
+  fetchLeagues()
   if (row) {
+    isNewMatch.value = false
     matchForm.value = { ...row }
+    fetchSeasonsByLeague(row.league).then(() => {
+      const season = availableSeasons.value.find(s => s.seasonName === row.season)
+      if (season) {
+        dialogSelectedSeason.value = season
+        dialogAvailableRounds.value = Array.from({ length: season.totalRounds }, (_, i) => i + 1)
+      }
+    })
   } else {
-    matchForm.value = { matchId: '', homeClubId: null, awayClubId: null, matchTime: null, league: '', season: '2024-2025', round: '', venue: '', referee: '', status: 'PENDING', homeScore: null, awayScore: null }
+    isNewMatch.value = true
+    matchForm.value = { matchId: '', homeClubId: null, awayClubId: null, matchTime: null, league: '', season: '', round: '', venue: '', referee: '', status: 'PENDING', homeScore: null, awayScore: null }
+    availableSeasons.value = []
+    dialogAvailableRounds.value = []
+    dialogSelectedSeason.value = null
   }
   matchDialogVisible.value = true
 }
 
 async function handleSaveMatch() {
   try {
-    if (matchForm.value.matchId && matches.value.some(m => m.matchId === matchForm.value.matchId)) {
-      await adminApi.updateMatch(matchForm.value.matchId, matchForm.value)
-    } else {
+    if (!matchForm.value.league) {
+      ElMessage.warning('请选择联赛')
+      return
+    }
+    if (!matchForm.value.homeClubId) {
+      ElMessage.warning('请选择主队')
+      return
+    }
+    if (!matchForm.value.awayClubId) {
+      ElMessage.warning('请选择客队')
+      return
+    }
+    if (!matchForm.value.matchTime) {
+      ElMessage.warning('请选择比赛时间')
+      return
+    }
+    if (!matchForm.value.season) {
+      ElMessage.warning('请选择赛季')
+      return
+    }
+    if (!matchForm.value.round) {
+      ElMessage.warning('请选择轮次')
+      return
+    }
+    if (!matchForm.value.status) {
+      ElMessage.warning('请选择比赛状态')
+      return
+    }
+    if (isNewMatch.value) {
+      if (!matchForm.value.matchId || !matchForm.value.matchId.trim()) {
+        ElMessage.warning('请输入比赛ID')
+        return
+      }
+      if (matches.value.some(m => m.matchId === matchForm.value.matchId)) {
+        ElMessage.warning('比赛ID已存在')
+        return
+      }
+    }
+    if (matchForm.value.homeClubId === matchForm.value.awayClubId) {
+      ElMessage.warning('主队和客队不能相同')
+      return
+    }
+    if (matchForm.value.league && matchForm.value.season && matchForm.value.round) {
+      const duplicateRound = matches.value.some(m =>
+        m.league === matchForm.value.league &&
+        m.season === matchForm.value.season &&
+        m.round === matchForm.value.round &&
+        (!isNewMatch.value && m.matchId !== matchForm.value.matchId)
+      )
+      if (duplicateRound) {
+        ElMessage.warning('同一赛季同一联赛已有相同轮次的比赛')
+        return
+      }
+    }
+    if (isNewMatch.value) {
       await adminApi.createMatch(matchForm.value)
+    } else {
+      await adminApi.updateMatch(matchForm.value.matchId, matchForm.value)
     }
     ElMessage.success('比赛已保存')
     matchDialogVisible.value = false
@@ -1092,8 +1239,25 @@ function addFinishEvent() {
 }
 
 async function handleFinishMatch() {
-  if (finishForm.value.homeScore == null || finishForm.value.awayScore == null) {
-    ElMessage.warning('请输入比分')
+  if (finishForm.value.homeScore == null || finishForm.value.homeScore === '') {
+    ElMessage.warning('请输入主队比分')
+    return
+  }
+  if (finishForm.value.awayScore == null || finishForm.value.awayScore === '') {
+    ElMessage.warning('请输入客队比分')
+    return
+  }
+  if (finishForm.value.homeScore < 0 || finishForm.value.awayScore < 0) {
+    ElMessage.warning('比分不能为负数')
+    return
+  }
+  const invalidEvents = finishForm.value.events.filter((e: any) => {
+    if (!e.eventType || !e.clubId || !e.playerId || e.matchMinute == null) return true
+    if (e.matchMinute < 1 || e.matchMinute > 120) return true
+    return false
+  })
+  if (invalidEvents.length > 0) {
+    ElMessage.warning('请完善比赛事件的必填信息')
     return
   }
   try {
@@ -1118,8 +1282,16 @@ async function handleFinishMatch() {
 }
 
 function openTransferDialog() {
-  transferForm.value = { playerId: null, newClubId: null, transferType: 'OUT', transferFee: null, season: '2024-2025', notes: '' }
+  const currentYear = new Date().getFullYear()
+  transferSeasonStart.value = currentYear
+  transferSeasonEnd.value = String(currentYear + 1)
+  transferForm.value = { playerId: null, newClubId: null, transferType: 'OUT', transferFee: null, season: `${currentYear}-${currentYear + 1}`, notes: '' }
   transferDialogVisible.value = true
+}
+
+function updateTransferSeason() {
+  transferSeasonEnd.value = String(transferSeasonStart.value + 1)
+  transferForm.value.season = `${transferSeasonStart.value}-${transferSeasonStart.value + 1}`
 }
 
 function onTransferPlayerChange(playerId: number) {
@@ -1133,6 +1305,18 @@ function onTransferPlayerChange(playerId: number) {
 
 async function handleSaveTransfer() {
   try {
+    if (!transferForm.value.playerId) {
+      ElMessage.warning('请选择球员')
+      return
+    }
+    if (!transferForm.value.newClubId) {
+      ElMessage.warning('请选择新俱乐部')
+      return
+    }
+    if (!transferForm.value.transferType) {
+      ElMessage.warning('请选择转会类型')
+      return
+    }
     await adminApi.createTransfer(transferForm.value)
     ElMessage.success('转会已完成')
     transferDialogVisible.value = false
@@ -1157,6 +1341,31 @@ async function fetchLeagues() {
   } catch (e) { console.error(e) }
 }
 
+async function fetchSeasonsByLeague(league: string) {
+  if (!league) return
+  try {
+    const res = await seasonApi.getByLeague(league)
+    availableSeasons.value = res.data.data || []
+  } catch (e) { console.error(e) }
+}
+
+function onLeagueChange(league: string) {
+  matchForm.value.season = ''
+  matchForm.value.round = ''
+  dialogAvailableRounds.value = []
+  dialogSelectedSeason.value = null
+  fetchSeasonsByLeague(league)
+}
+
+function onSeasonChange(seasonName: string) {
+  matchForm.value.round = ''
+  const season = availableSeasons.value.find(s => s.seasonName === seasonName)
+  if (season) {
+    dialogSelectedSeason.value = season
+    dialogAvailableRounds.value = Array.from({ length: season.totalRounds }, (_, i) => i + 1)
+  }
+}
+
 function openClubDialog(row?: any) {
   fetchLeagues()
   if (row) {
@@ -1169,6 +1378,26 @@ function openClubDialog(row?: any) {
 
 async function handleSaveClub() {
   try {
+    if (!clubForm.value.name || !clubForm.value.name.trim()) {
+      ElMessage.warning('请输入俱乐部名称')
+      return
+    }
+    if (clubForm.value.name.trim().length < 2) {
+      ElMessage.warning('俱乐部名称至少2个字符')
+      return
+    }
+    if (clubForm.value.shortName && clubForm.value.shortName.trim().length < 1) {
+      ElMessage.warning('俱乐部简称格式不正确')
+      return
+    }
+    if (!clubForm.value.stadiumCapacity && clubForm.value.stadiumCapacity !== 0) {
+      ElMessage.warning('请输入球场容量')
+      return
+    }
+    if (clubForm.value.stadiumCapacity < 1000 || clubForm.value.stadiumCapacity > 200000) {
+      ElMessage.warning('球场容量应在1000-200000之间')
+      return
+    }
     if (clubForm.value.clubId) {
       await adminApi.updateClub(clubForm.value.clubId, clubForm.value)
     } else {
@@ -1202,6 +1431,51 @@ function openPlayerDialog(row?: any) {
 
 async function handleSavePlayer() {
   try {
+    if (!playerForm.value.name || !playerForm.value.name.trim()) {
+      ElMessage.warning('请输入球员英文名')
+      return
+    }
+    if (!playerForm.value.clubId) {
+      ElMessage.warning('请选择所属球队')
+      return
+    }
+    if (!playerForm.value.position) {
+      ElMessage.warning('请选择球员位置')
+      return
+    }
+    if (!playerForm.value.jerseyNumber) {
+      ElMessage.warning('请选择球衣号码')
+      return
+    }
+    if (!playerForm.value.heightCm) {
+      ElMessage.warning('请输入身高')
+      return
+    }
+    if (!playerForm.value.weightKg) {
+      ElMessage.warning('请输入体重')
+      return
+    }
+    if (!playerForm.value.status) {
+      ElMessage.warning('请选择球员状态')
+      return
+    }
+    if (playerForm.value.heightCm < 150 || playerForm.value.heightCm > 220) {
+      ElMessage.warning('身高应在150-220cm之间')
+      return
+    }
+    if (playerForm.value.weightKg < 50 || playerForm.value.weightKg > 150) {
+      ElMessage.warning('体重应在50-150kg之间')
+      return
+    }
+    const sameClubPlayers = allPlayers.value.filter((p: any) =>
+      p.clubId === playerForm.value.clubId &&
+      p.jerseyNumber === playerForm.value.jerseyNumber &&
+      p.playerId !== playerForm.value.playerId
+    )
+    if (sameClubPlayers.length > 0) {
+      ElMessage.warning(`该球队已有${playerForm.value.jerseyNumber}号球员`)
+      return
+    }
     if (playerForm.value.playerId) {
       await adminApi.updatePlayer(playerForm.value.playerId, playerForm.value)
     } else {
@@ -1248,6 +1522,30 @@ function openNewsDialog(row?: any) {
 
 async function handleSaveNews() {
   try {
+    if (!newsForm.value.title || !newsForm.value.title.trim()) {
+      ElMessage.warning('请输入新闻标题')
+      return
+    }
+    if (newsForm.value.title.trim().length < 5) {
+      ElMessage.warning('新闻标题至少5个字符')
+      return
+    }
+    if (!newsForm.value.content || !newsForm.value.content.trim()) {
+      ElMessage.warning('请输入新闻内容')
+      return
+    }
+    if (newsForm.value.content.trim().length < 10) {
+      ElMessage.warning('新闻内容至少10个字符')
+      return
+    }
+    if (newsForm.value.sourceUrl && newsForm.value.sourceUrl.trim()) {
+      try {
+        new URL(newsForm.value.sourceUrl)
+      } catch {
+        ElMessage.warning('来源链接格式不正确')
+        return
+      }
+    }
     if (newsForm.value.articleId) {
       await newsApi.update(newsForm.value.articleId, newsForm.value)
     } else {
@@ -1378,20 +1676,36 @@ async function fetchActiveSeasons() {
 }
 
 function showStartNewSeasonDialog() {
+  const currentYear = new Date().getFullYear()
+  newSeasonStartYear.value = currentYear
   newSeasonForm.value = { league: '', seasonName: '', totalRounds: 38 }
   newSeasonDialogVisible.value = true
 }
 
 async function handleStartNewSeason() {
   try {
-    if (!newSeasonForm.value.league || !newSeasonForm.value.seasonName) {
-      ElMessage.warning('请填写联赛和赛季名称')
+    if (!newSeasonForm.value.league) {
+      ElMessage.warning('请选择联赛')
+      return
+    }
+    if (!newSeasonStartYear.value) {
+      ElMessage.warning('请选择起始年份')
+      return
+    }
+    if (!newSeasonForm.value.totalRounds) {
+      ElMessage.warning('请选择总轮数')
+      return
+    }
+    const newSeasonName = `${newSeasonStartYear.value}-${newSeasonStartYear.value + 1}`
+    const existingSeason = allSeasons.value.find(s => s.league === newSeasonForm.value.league && s.seasonName === newSeasonName)
+    if (existingSeason) {
+      ElMessage.warning(`${newSeasonName}赛季已存在`)
       return
     }
     await ElMessageBox.confirm('确定要开启新赛季吗？这将清空当前赛季的所有数据！', '警告', { type: 'warning' })
     await seasonApi.startNew({
       league: newSeasonForm.value.league,
-      seasonName: newSeasonForm.value.seasonName,
+      seasonName: newSeasonName,
       totalRounds: newSeasonForm.value.totalRounds
     })
     ElMessage.success('新赛季已开启')

@@ -172,7 +172,7 @@ async function fetchSettledMatches() {
     if (showAllFinished.value) {
       finishedMatches.value = allMatches
     } else {
-      finishedMatches.value = allMatches.filter(m => pendingCounts[m.matchId] > 0)
+      finishedMatches.value = allMatches.filter((m: any) => pendingCounts[m.matchId] > 0)
     }
   } catch (e: any) {
     ElMessage.error('获取比赛列表失败: ' + (e.response?.data?.message || e.message))

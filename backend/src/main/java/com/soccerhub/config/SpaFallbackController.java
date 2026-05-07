@@ -12,4 +12,9 @@ public class SpaFallbackController {
     public String root() {
         return "forward:/index.html";
     }
+
+    @GetMapping(value = "/m")
+    public String mobile() {
+        return "forward:/index.html";
+    }
 }

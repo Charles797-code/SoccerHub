@@ -18,6 +18,12 @@ public class ApiPrefixFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         String path = req.getRequestURI();
 
+        // Skip /api/upload paths - let Spring MVC handle them normally
+        if (path.startsWith("/api/upload")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (path.startsWith("/api/")) {
             String newPath = path.substring(4);
             chain.doFilter(new ApiPathRequestWrapper(req, newPath), response);
